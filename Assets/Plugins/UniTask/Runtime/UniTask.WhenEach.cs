@@ -17,6 +17,11 @@ namespace Cysharp.Threading.Tasks
         {
             return new WhenEachEnumerable<T>(tasks);
         }
+
+        public void Forget()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public readonly struct WhenEachResult<T>

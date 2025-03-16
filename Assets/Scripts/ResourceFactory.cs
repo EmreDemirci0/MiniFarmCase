@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UniRx;
 using UnityEngine;
 using Zenject;
-
+//siil
 public class ResourceFactory : MonoBehaviour
 {
     //[SerializeField] private ResourceType producedResource = ResourceType.Wheat; // Üretilecek kaynak türü

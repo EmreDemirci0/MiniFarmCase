@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class ResourceManager : MonoBehaviour
 {
-    private HayFactory _hayFactory;
+    private GeneralResourceFactory _hayFactory;
     private HayResource _currentResource;
 
     [Inject]
-    public void Construct(HayFactory hayFactory)
+    public void Construct(GeneralResourceFactory hayFactory)
     {
         _hayFactory = hayFactory;
     }

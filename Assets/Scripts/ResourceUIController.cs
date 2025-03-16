@@ -11,6 +11,9 @@ using Zenject;
 
 public class ResourceUIController : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI hayText;
+    [SerializeField] private TextMeshProUGUI flourText;
+    [SerializeField] private TextMeshProUGUI breadText;
     [SerializeField] private TextMeshProUGUI resourceCountText;
     [SerializeField] private TextMeshProUGUI productionTimerText;
     [SerializeField] private Slider hayFactoryResourceSlider;
@@ -18,49 +21,36 @@ public class ResourceUIController : MonoBehaviour
 
     private HayResource _currentResource;
 
-    [Inject]
-    public  async void Construct(HayFactory hayFactory)
-    {
-        // HayFactory üzerinden bir kaynak üret
-        _currentResource = hayFactory.Create() as HayResource;
-        _currentResource.OnProductionTimeChanged += UpdateProductionTimer; // Event dinlemeye baþla
-      await  _currentResource.Produce(); // Üretimi baþlat
+    public float HayCount = 10;
+    public float FlourCount = 0;
+    public float BreadCount = 0;
 
-        hayFactoryResourceSlider.maxValue = _currentResource.ProductionTime;
-        hayFactoryResourceSlider.value = _currentResource.ProductionTime;
-    }
+    //[Inject]
+    //public async void Construct(GeneralResourceFactory hayFactory)
+    //{
+    //    // HayFactory üzerinden bir kaynak üret
+    //    _currentResource = hayFactory.Create() as HayResource;
+    //    _currentResource.OnProductionTimeChanged += UpdateProductionTimer; // Event dinlemeye baþla
+    //    //await _currentResource.Produce(); // Üretimi baþlat
+
+    //    hayFactoryResourceSlider.maxValue = _currentResource.ProductionTime;
+    //    hayFactoryResourceSlider.value = _currentResource.ProductionTime;
+    //}
 
     private void Start()
     {
         // Depodaki kaynak sayýsýný UI'ya baðla
-        _currentResource.StoredResources.Subscribe(UpdateResourceCount).AddTo(this);
+        //_currentResource.StoredResources.Subscribe(UpdateResourceCount).AddTo(this);
 
         // Butona týklanýnca kaynaklarý topla
         //collectButton.onClick.AddListener(CollectResources);
     }
-    private void Update()
-    {
-        // 3D sahnede bina objesine týklama iþlemi
-        if (Input.GetMouseButtonDown(0)) // Sol fare tuþu
-        {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); // Fare konumundan bir ray oluþtur
-
-            if (Physics.Raycast(ray, out hit)) // Ray objeye çarptýysa
-            {
-                if (hit.collider != null)
-                {
-                    //Tag vb. ile kontrol et
-                    Debug.Log("Bina týklandý!");
-                    CollectResources(); // Kaynaklarý topla
-                }
-            }
-        }
-    }
+   
     // Kaynak sayýsýný güncelle
-    private void UpdateResourceCount(int value)
+    public void UpdateResourceCount(int value)
     {
-        resourceCountText.text = $"{value}";
+        Debug.Log("GÜNCELLENDI"+value);
+        resourceCountText.text = $"_{value}";
         //collectButton.interactable = value > 0; // Depoda ürün varsa butonu aç
     }
 
@@ -68,32 +58,34 @@ public class ResourceUIController : MonoBehaviour
     private void CollectResources()
     {
         // Kaynaklarý toplama iþlemi ve ardýndan üretimi baþlatma
-        _currentResource.CollectResources();
+        var collected = _currentResource.CollectResources();
+       // HayCount += collected;
+        hayText.text = HayCount.ToString();
         // await _currentResource.Produce(); // Üretime baþla
     }
 
     // Event tetiklendiðinde UI'yi güncelle
-    private void UpdateProductionTimer(int remainingTime, bool isFull)
-    {
-        if (isFull)
-        {
-            hayFactoryResourceSlider.value = hayFactoryResourceSlider.maxValue;
-            productionTimerText.text = "Depo Dolu!";
-        }
-        else if (remainingTime > 0)
-        {
-            hayFactoryResourceSlider.DOValue(remainingTime, 1f).SetEase(Ease.Linear);
-            productionTimerText.text = $"{remainingTime} sn";
-        }
-        //else
-        //{
-        //    productionTimerText.text = "Üretildi!";
-        //}
-    }
+    //public void UpdateProductionTimer(int remainingTime, bool isFull)
+    //{
+    //    if (isFull)
+    //    {
+    //        hayFactoryResourceSlider.value = hayFactoryResourceSlider.maxValue;
+    //        productionTimerText.text = "Depo Dolu!";
+    //    }
+    //    else if (remainingTime > 0)
+    //    {
+    //        hayFactoryResourceSlider.DOValue(remainingTime, 1f).SetEase(Ease.Linear);
+    //        productionTimerText.text = $"{remainingTime} sn";
+    //    }
+    //    //else
+    //    //{
+    //    //    productionTimerText.text = "Üretildi!";
+    //    //}
+    //}
 
     // Obje silindiðinde event'i temizle
     private void OnDestroy()
     {
-        _currentResource.OnProductionTimeChanged -= UpdateProductionTimer; // Event'i iptal et
+        //_currentResource.OnProductionTimeChanged -= UpdateProductionTimer; // Event'i iptal et
     }
 }

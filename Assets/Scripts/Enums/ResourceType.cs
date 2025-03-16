@@ -1,5 +1,6 @@
 public enum ResourceType
 {
     None,
-    Wheat
+    Hay,
+    
 }
