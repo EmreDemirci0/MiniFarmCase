@@ -20,15 +20,18 @@ public class GameInstaller : MonoInstaller
 
         // ResourceCollector'ý baðlayalým
         Container.Bind<ResourceCollector>().FromComponentInHierarchy().AsSingle();
-
+        Container.Bind<ResourceManager>().FromComponentInHierarchy().AsSingle();
         // ResourceBase ve alt türlerini baðlayalým
         Container.Bind<HayResource>().AsSingle();
+        Container.Bind<FlourResource>().AsSingle();
+
+        Container.Bind<HayEntity>().FromComponentInHierarchy().AsSingle();
+        Container.Bind<FlourEntity>().FromComponentInHierarchy().AsSingle();
         //Container.Bind<FlourResource>().AsSingle();
 
         // Fabrikayý baðlayalým
-        Container.BindFactory<ResourceBase, GeneralResourceFactory>()
-                 .To<HayResource>(); // Burada HayResource türünü seçiyoruz, istediðiniz gibi deðiþtirebilirsiniz
-                 //.To<FlourResource>(); // Ayný þekilde FlourResource da eklenebilir
+        Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<HayResource>(); // Burada HayResource türünü seçiyoruz, istediðiniz gibi deðiþtirebilirsiniz
+        Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<FlourResource>();
     }
 }
 

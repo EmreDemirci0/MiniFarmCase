@@ -1,4 +1,4 @@
 public interface IEntity
 {
-    void CollectResources();
+    void Interact();
 }

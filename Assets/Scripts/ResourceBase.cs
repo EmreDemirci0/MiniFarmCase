@@ -14,7 +14,6 @@ public abstract class ResourceBase
     protected int productionTime = 5; // Üretim süresi (saniye)
     protected int maxCapacity = 5; // Fabrikanýn kapasitesi
 
-    public static ReactiveProperty<int> TotalResourcesCount = new ReactiveProperty<int>(0); // Toplam hay miktarý
 
     protected bool isProducing = false;
 

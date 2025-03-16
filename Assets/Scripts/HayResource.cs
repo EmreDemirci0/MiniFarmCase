@@ -6,10 +6,14 @@ using Zenject;
 
 public class HayResource : ResourceBase
 {
-    //public event Action<int> OnProductionTimeChanged;
-    //public event Action<int> OnStoredResourcesChanged;
 
-    
+    private ResourceManager _resourceManager;
+
+    [Inject]
+    public void Construct(ResourceManager resourceManager)
+    {
+        _resourceManager = resourceManager;
+    }
 
     public override async UniTask Produce()
     {
@@ -30,7 +34,6 @@ public class HayResource : ResourceBase
             }
 
             storedResources.Value++;
-            Debug.Log("Value ARttý mý ?");
             //OnStoredResourcesChanged?.Invoke(storedResources.Value);
         }
 
@@ -50,7 +53,8 @@ public class HayResource : ResourceBase
         storedResources.Value = 0;
         //OnStoredResourcesChanged?.Invoke(0);
 
-        TotalResourcesCount.Value += collected;
+        //TotalResourcesCount.Value += collected;
+        _resourceManager.AddResource(ResourceType.Hay, collected);
         // Only call Produce() if it's not already running
         if (!isProducing)
         {

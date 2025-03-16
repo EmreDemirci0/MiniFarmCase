@@ -7,24 +7,27 @@ public class HayEntity : MonoBehaviour, IEntity
     [SerializeField] private int productionTime = 5; // Inspectordan ayarlanabilir
     [SerializeField] private int maxCapacity = 5; // Inspectordan ayarlanabilir
 
+
+
     [Inject]
     public void Construct(HayResource hayResource)
     {
         _hayResource = hayResource;
         _hayResource.SetProductionValues(productionTime, maxCapacity);
 
+      
+
     }
     private async void Start()
     {
-
-       await _hayResource.Produce(); // Üretimi baþlat
+        await _hayResource.Produce(); // Üretimi baþlat
     }
-
-    public async void CollectResources()
+    public async void Interact()
     {
+        
         if (_hayResource != null)
         {
-           await  _hayResource.CollectResources();
+            await _hayResource.CollectResources();
         }
     }
 }
