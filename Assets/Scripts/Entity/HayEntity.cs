@@ -2,12 +2,11 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
-public class HayEntity : MonoBehaviour, IEntity
+public class HayEntity : NonResourceEntity
 {
     private HayResource _hayResource;
     private ResourceCollector _resourceCollector;
-    [SerializeField] private int productionTime = 5; // Inspectordan ayarlanabilir
-    [SerializeField] private int maxCapacity = 5; // Inspectordan ayarlanabilir
+   
 
 
 
@@ -27,7 +26,7 @@ public class HayEntity : MonoBehaviour, IEntity
             _resourceCollector.StartProgressUpdateLoop()
         );
     }
-    public async void Interact()
+    public async override void Interact()
     {
         
         if (_hayResource != null)

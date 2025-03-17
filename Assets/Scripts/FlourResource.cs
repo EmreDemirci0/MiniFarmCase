@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -9,60 +10,59 @@ using Zenject;
 
 public class FlourResource : ResourceBase
 {
-    /*private */public FlourEntity _flourEntity;  // FlourEntity referansý
-
-    public bool IsProducing => isProducing;
+   
 
     private ResourceManager _resourceManager;
     private ResourceCollector _resourceCollector;
+    private ReactiveProperty<int> _queueCount = new ReactiveProperty<int>(0);
+
+    public IReadOnlyReactiveProperty<int> QueueCount => _queueCount;
+    public IObservable<int> OnQueueCountChanged => _queueCount.AsObservable();
+    public bool IsProducing => isProducing;
 
     [Inject]
-    public void Construct(FlourEntity flourEntity, ResourceCollector resourceCollector, ResourceManager resourceManager)
+    public void Construct(ResourceCollector resourceCollector, ResourceManager resourceManager)
     {
-        _flourEntity = flourEntity;
         _resourceManager = resourceManager;
         _resourceCollector = resourceCollector;
-
-        
     }
-    
-    public async UniTask<bool> AddToQueue(ResourceType type, int quantity)
+    public void IncreaseQueueCount()
     {
-        _resourceManager.RemoveResource(type, quantity);
-        _flourEntity.UpdateTotalQuantityText();
+        _queueCount.Value++;
+    }
 
-        if (_flourEntity.currentQueueCount.Value <= 0 || IsProducing)
-            return false;
-        //await Produce(); // Üretimi baþlat
-        //StartProgressUpdateLoop2
+    public void DecreaseQueueCount()
+    {
+        if (_queueCount.Value > 0)
+        {
+            _queueCount.Value--;
+        }
+    }
+    public async UniTask AddToQueue(ResourceType type, int quantity)
+    {      
+        _resourceManager.RemoveResource(type, quantity);
+        IncreaseQueueCount();
+
+        if (_queueCount.Value <= 0 || IsProducing)
+            return;
+
         await UniTask.WhenAll(
             Produce(),
-            _resourceCollector.StartProgressUpdateLoop2()
+            _resourceCollector.FlourSliderTask()
         );
-        //burada döngü oluyor. onu engelle, eðer entity.currentQueueObject>0 ise yap, iþ bitince bir azalt eðer 0 ise slider vb. iþlemler dursun,
-        //+ butonuna üst üste basýnca bug oluyor sýraya alsýn,
-        Debug.Log("Addtoqueuue2");
-        return true;
+      
         
     }
 
     // Kaynak çýkarma metodu
-    public bool RemoveFromQueue(ResourceType type, int quantity)
+    public void RemoveFromQueue(ResourceType type, int quantity)
     {
-        Debug.Log("Bir");
-        if (_flourEntity.currentQueueCount.Value <= 0)
-            return false;
-        Debug.Log("iki");
-        _flourEntity.ReduceTotalQuantityText();
+        if (_queueCount.Value <= 0)
+            return;
+        DecreaseQueueCount();
         _resourceManager.AddResource(type, quantity);
 
-        //if (_flourEntity.currentQueueCount.Value <= 0)
-        //{
-        //    isProducing = false;
-        //    _resourceCollector.UpdateFlourSlider(); // Slider'ý güncelle
-        //}
-        Debug.Log("uc");
-        return true;
+      
 
     }
     public override async UniTask Produce()
@@ -76,22 +76,25 @@ public class FlourResource : ResourceBase
 
         isProducing = true;
 
-        while (_flourEntity.currentQueueCount.Value > 0 && storedResources.Value < maxCapacity)
+        while (_queueCount.Value > 0 && storedResources.Value < maxCapacity)
         {
             for (int i = productionTime; i > 0; i--)
             {                
                 //_resourceCollector.flourProductionTimerText.text = $"{i}s";
                 await UniTask.Delay(1000);
             }
-
+            /*BU KISIM GEREKSÝZ GÝBÝ*/
             storedResources.Value++; // Üretilen kaynak ekleniyor
             Debug.Log("Yeni kaynak üretildi!");
 
             // Kuyruktan bir eksilt
-            _flourEntity.ReduceTotalQuantityText();
+            DecreaseQueueCount();
+            /*BU KISIM GEREKSÝZ GÝBÝ*/
+
+
 
             // Eðer kuyruk tamamen bittiyse üretimi durdur
-            if (_flourEntity.currentQueueCount.Value <= 0)
+            if (_queueCount.Value <= 0)
             {
                 Debug.Log("Üretim kuyruðu boþaldý, üretim durduruluyor.");
                 isProducing = false;
@@ -130,7 +133,7 @@ public class FlourResource : ResourceBase
         {
             await UniTask.WhenAll(
             Produce(),
-            _resourceCollector.StartProgressUpdateLoop2()
+            _resourceCollector.FlourSliderTask()
             );
         }
 

@@ -30,8 +30,8 @@ public class GameInstaller : MonoInstaller
         //Container.Bind<FlourResource>().AsSingle();
 
         // Fabrikayý baðlayalým
-        Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<HayResource>(); // Burada HayResource türünü seçiyoruz, istediðiniz gibi deðiþtirebilirsiniz
-        Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<FlourResource>();
+        //Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<HayResource>(); // Burada HayResource türünü seçiyoruz, istediðiniz gibi deðiþtirebilirsiniz
+        //Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<FlourResource>();
     }
 }
 

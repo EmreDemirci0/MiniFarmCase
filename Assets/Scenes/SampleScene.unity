@@ -2445,10 +2445,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5de10afd1474b4f4e97f17a746ba17b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  productionTime: 10
+  productionTime: 5
   maxCapacity: 5
   isNeedResource: 0
-  resourceType: 1
+  requiredResourceType: 1
   resourceQuantity: 2
   totalQuantityText: {fileID: 166549978}
   productionButtons: {fileID: 872480906}
@@ -2460,8 +2460,6 @@ MonoBehaviour:
   productionSprites:
   - {fileID: 21300000, guid: be5df5669c8834b66a502e016ef957ff, type: 3}
   - {fileID: 21300000, guid: 4e5d546e8ce7e41029c6e5feb3608f9c, type: 3}
-  currentQueueCount:
-    value: 0
 --- !u!1001 &1729794603
 PrefabInstance:
   m_ObjectHideFlags: 0
