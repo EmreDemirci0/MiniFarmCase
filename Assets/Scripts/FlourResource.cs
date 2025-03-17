@@ -3,6 +3,7 @@ using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UniRx;
 using UnityEngine;
 using Zenject;
 
@@ -21,16 +22,16 @@ public class FlourResource : ResourceBase
         _flourEntity = flourEntity;
         _resourceManager = resourceManager;
         _resourceCollector = resourceCollector;
-    }
 
-    // Kaynak ekleme metodu
+        
+    }
+    
     public async UniTask<bool> AddToQueue(ResourceType type, int quantity)
     {
-        
         _resourceManager.RemoveResource(type, quantity);
         _flourEntity.UpdateTotalQuantityText();
 
-        if (_flourEntity.currentQueueCount <= 0 || isProducing)
+        if (_flourEntity.currentQueueCount.Value <= 0 || IsProducing)
             return false;
         //await Produce(); // Üretimi baþlat
         //StartProgressUpdateLoop2
@@ -40,36 +41,42 @@ public class FlourResource : ResourceBase
         );
         //burada döngü oluyor. onu engelle, eðer entity.currentQueueObject>0 ise yap, iþ bitince bir azalt eðer 0 ise slider vb. iþlemler dursun,
         //+ butonuna üst üste basýnca bug oluyor sýraya alsýn,
+        Debug.Log("Addtoqueuue2");
         return true;
         
     }
 
     // Kaynak çýkarma metodu
-    public bool RemoveFromQueue(int quantity)
+    public bool RemoveFromQueue(ResourceType type, int quantity)
     {
-        return false;
-        //if (currentQueueCount >= quantity)
+        Debug.Log("Bir");
+        if (_flourEntity.currentQueueCount.Value <= 0)
+            return false;
+        Debug.Log("iki");
+        _flourEntity.ReduceTotalQuantityText();
+        _resourceManager.AddResource(type, quantity);
+
+        //if (_flourEntity.currentQueueCount.Value <= 0)
         //{
-        //    currentQueueCount -= quantity;
-        //    inventoryCount += quantity;
-        //    //UpdateTotalQuantityText();
-        //    return true;  // Baþarýlý
+        //    isProducing = false;
+        //    _resourceCollector.UpdateFlourSlider(); // Slider'ý güncelle
         //}
-        //else
-        //{
-        //    Debug.Log("Kuyrukta yeterli kaynak yok.");
-        //    return false;  // Baþarýsýz
-        //}
+        Debug.Log("uc");
+        return true;
+
     }
     public override async UniTask Produce()
     {
         // Eðer zaten üretim yapýlýyorsa çýk
-        if (isProducing || _flourEntity.currentQueueCount <= 0)
+        if (IsProducing || StoredResources.Value >= MaxCapacity)
+        {
+            Debug.Log("Üretim yapýlmýyor veya kapasite dolmuþ.");
             return;
+        }
 
         isProducing = true;
 
-        while (_flourEntity.currentQueueCount > 0 && storedResources.Value < maxCapacity)
+        while (_flourEntity.currentQueueCount.Value > 0 && storedResources.Value < maxCapacity)
         {
             for (int i = productionTime; i > 0; i--)
             {                
@@ -84,14 +91,10 @@ public class FlourResource : ResourceBase
             _flourEntity.ReduceTotalQuantityText();
 
             // Eðer kuyruk tamamen bittiyse üretimi durdur
-            if (_flourEntity.currentQueueCount <= 0)
+            if (_flourEntity.currentQueueCount.Value <= 0)
             {
                 Debug.Log("Üretim kuyruðu boþaldý, üretim durduruluyor.");
                 isProducing = false;
-                //_resourceCollector.flourProductionTimerText.text = "Finish";
-                //_resourceCollector.flourFactoryResourceSlider.value = 0;
-                // Slider'ý sýfýrla
-                //_resourceCollector.flourFactoryResourceSlider.DOValue(0f, 0.5f).SetEase(Ease.OutQuad);
                 return;
             }
         }
@@ -101,32 +104,8 @@ public class FlourResource : ResourceBase
 
 
 
-    //public override async UniTask Produce()
-    //{
-    //    //OnStoredResourcesChanged?.Invoke(0);
-    //    if (isProducing)
-    //    {
-    //        return;
-    //    }
-
-    //    isProducing = true;
-
-    //    while (storedResources.Value < maxCapacity)
-    //    {
-    //        for (int i = productionTime; i > 0; i--)
-    //        {
-    //            //OnProductionTimeChanged?.Invoke(i);
-    //            await UniTask.Delay(1000);
-    //        }
-
-    //        storedResources.Value++;
-    //        Debug.Log("Value ARttý mý ?");
-    //        //OnStoredResourcesChanged?.Invoke(storedResources.Value);
-    //    }
-
-    //    isProducing = false;
-    //}
-
+   
+    
     public async UniTask<int> CollectResources()
     {
         if (storedResources.Value == 0)
@@ -136,7 +115,6 @@ public class FlourResource : ResourceBase
         }
 
         int collected = storedResources.Value;
-        Debug.Log("Collect" + collected);
         storedResources.Value = 0;
         //OnStoredResourcesChanged?.Invoke(0);
         _resourceManager.AddResource(ResourceType.Flour, collected);
@@ -150,7 +128,10 @@ public class FlourResource : ResourceBase
         // Only call Produce() if it's not already running
         if (!isProducing)
         {
-            await Produce(); // Start production if it's not already running
+            await UniTask.WhenAll(
+            Produce(),
+            _resourceCollector.StartProgressUpdateLoop2()
+            );
         }
 
         return collected;

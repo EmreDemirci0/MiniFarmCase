@@ -580,7 +580,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3988507031057370029, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5239945200890011193, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_Sprite
@@ -624,11 +624,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8516935011501871943, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8516935011501871943, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2445,7 +2445,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5de10afd1474b4f4e97f17a746ba17b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  productionTime: 5
+  productionTime: 10
   maxCapacity: 5
   isNeedResource: 0
   resourceType: 1
@@ -2460,7 +2460,8 @@ MonoBehaviour:
   productionSprites:
   - {fileID: 21300000, guid: be5df5669c8834b66a502e016ef957ff, type: 3}
   - {fileID: 21300000, guid: 4e5d546e8ce7e41029c6e5feb3608f9c, type: 3}
-  currentQueueCount: 0
+  currentQueueCount:
+    value: 0
 --- !u!1001 &1729794603
 PrefabInstance:
   m_ObjectHideFlags: 0

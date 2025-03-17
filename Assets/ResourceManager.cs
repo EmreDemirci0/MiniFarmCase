@@ -5,7 +5,7 @@ using Zenject;
 public class ResourceManager : MonoBehaviour
 {
     // ReactiveProperty kullanarak bu deðerleri dinamik yapalým
-    public ReactiveProperty<int> TotalHayCount { get; private set; } = new ReactiveProperty<int>(10);
+    public ReactiveProperty<int> TotalHayCount { get; private set; } = new ReactiveProperty<int>(100);
     public ReactiveProperty<int> TotalFlourCount { get; private set; } = new ReactiveProperty<int>(0);
 
     [Inject]

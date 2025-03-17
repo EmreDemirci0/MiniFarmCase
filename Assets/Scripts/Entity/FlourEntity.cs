@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 using UniRx;
-
+ 
 public class FlourEntity : MonoBehaviour, IEntity
 {
 
@@ -30,16 +30,23 @@ public class FlourEntity : MonoBehaviour, IEntity
     Sprite[] productionSprites;//Hay,Flour 
 
 
-    public/*?*/ int currentQueueCount = 0;  // Kuyruktaki item sayýsý
+    public ReactiveProperty<int> currentQueueCount = new ReactiveProperty<int>(0);
     private int inventoryCount = 10;
-
+    private void Update()
+    {
+    }
 
     [Inject]
     public void Construct(ResourceManager resourceManager, FlourResource flourResource)
     {
+        Debug.Log("slider açýp kapatma");
+        Debug.Log(" - butonu");
+        
         _flourResource = flourResource;
         _flourResource.SetProductionValues(productionTime, maxCapacity);
         _resourceManager = resourceManager;
+
+
         if (resourceType==ResourceType.Hay)
         {
             productionImage.sprite = productionSprites[0];
@@ -53,7 +60,7 @@ public class FlourEntity : MonoBehaviour, IEntity
         plusProductionOrderButton.onClick.AddListener(OnAddButtonClicked);
         minusProductionOrderButton.onClick.AddListener(OnRemoveButtonClicked);
 
-       // UpdateTotalQuantityText();
+        // UpdateTotalQuantityText();
 
         _resourceManager.TotalHayCount
              .Subscribe(_ => UpdateButtonInteractivity())  // Hay miktarýndaki deðiþiklikleri dinle
@@ -62,28 +69,37 @@ public class FlourEntity : MonoBehaviour, IEntity
         _resourceManager.TotalFlourCount
             .Subscribe(_ => UpdateButtonInteractivity())  // Flour miktarýndaki deðiþiklikleri dinle
             .AddTo(this);
+
+        currentQueueCount.Subscribe(_ => UpdateButtonInteractivity()).AddTo(this);
     }
-    private void UpdateButtonInteractivity()
+
+    //Totalresource deðiþince,currentqueue deðiþince tetikleneceki
+    public/**/ void UpdateButtonInteractivity()
     {
+        
         int currentResourceCount = _resourceManager.GetTotalResourceCount(resourceType);
 
-        // Butonlarý kaynak miktarýna göre aktif/pasif yapýyoruz
-        plusProductionOrderButton.interactable = currentResourceCount >= resourceQuantity;
-        minusProductionOrderButton.interactable = currentQueueCount > 0;  // Kuyrukta kaynak varsa çýkarýlabilir
+        plusProductionOrderButton.interactable = currentResourceCount >= resourceQuantity && currentQueueCount.Value < maxCapacity;
+        minusProductionOrderButton.interactable = currentQueueCount.Value >1;  // Kuyrukta kaynak varsa çýkarýlabilir
     }
     public async void OnAddButtonClicked()
     {
+      
         bool success =await _flourResource.AddToQueue(resourceType,resourceQuantity);
-        if (!success)
+        await UniTask.Yield();
+        //UpdateButtonInteractivity();
+        if (success)
         {
-            Debug.Log("Kaynak eklenemedi!");
+            //UpdateButtonInteractivity();
+            //Debug.Log("Kaynak eklenemedi!");
         }
     }
 
     // - butonuna basýldýðýnda kaynak çýkarma
     public void OnRemoveButtonClicked()
     {
-        bool success = _flourResource.RemoveFromQueue(resourceQuantity);
+        Debug.Log("removebutton");
+        bool success = _flourResource.RemoveFromQueue(resourceType,resourceQuantity);
         if (!success)
         {
             Debug.Log("Kaynak çýkarýlamadý!");
@@ -94,14 +110,18 @@ public class FlourEntity : MonoBehaviour, IEntity
     // Kuyruktaki öðeleri ve toplam kapasiteyi güncelleyen metot
     public void UpdateTotalQuantityText()
     {
-        currentQueueCount++;
+        currentQueueCount.Value++;
         totalQuantityText.text = $"{currentQueueCount}/{maxCapacity}";
     }
     public void ReduceTotalQuantityText()
     {
-        if (currentQueueCount > 0)
-        {
-            currentQueueCount--;
+        Debug.Log("azalt1");
+        if (currentQueueCount.Value > 0)
+            {
+            Debug.Log("azalt2");
+            Debug.Log($"Önce: {currentQueueCount.Value}");
+            currentQueueCount.Value--;
+            Debug.Log($"Sonra: {currentQueueCount.Value}");
             totalQuantityText.text = $"{currentQueueCount}/{maxCapacity}";
         }
         
@@ -115,7 +135,7 @@ public class FlourEntity : MonoBehaviour, IEntity
         }
         else
         {
-            Debug.Log("Zaten açýkmýs");
+            //Debug.Log("Zaten açýkmýs");
             if (_flourResource != null)
             {
                 //    ReduceTotalQuantityText();

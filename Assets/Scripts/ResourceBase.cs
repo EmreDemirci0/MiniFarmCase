@@ -8,7 +8,7 @@ public abstract class ResourceBase
 {
     public abstract UniTask Produce(); // Her kaynak türü farklý üretim yapacak.
 
-    protected ReactiveProperty<int> storedResources = new ReactiveProperty<int>(0); // Depodaki kaynak sayýsý
+    protected IntReactiveProperty storedResources = new IntReactiveProperty(0); // Depodaki kaynak sayýsý
     private ReactiveProperty<int> productionTimeLeft = new ReactiveProperty<int>();
 
     protected int productionTime = 5; // Üretim süresi (saniye)
