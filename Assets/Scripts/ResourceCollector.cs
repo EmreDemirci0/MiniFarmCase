@@ -18,9 +18,9 @@ public class ResourceCollector : MonoBehaviour
     [SerializeField] private TextMeshProUGUI hayProductionTimerText;
 
     [SerializeField] private TextMeshProUGUI totalFlourCountText;
-    [SerializeField] /*private*/public Slider flourFactoryResourceSlider;
+    [SerializeField] private  /*public*/ Slider flourFactoryResourceSlider;
     [SerializeField] private TextMeshProUGUI flourResourceCapacityText;
-    [SerializeField] /*private*/public TextMeshProUGUI flourProductionTimerText;
+    [SerializeField] private/*public*/ TextMeshProUGUI flourProductionTimerText;
 
     private FlourEntity _currentFlourEntity;
 
@@ -146,8 +146,10 @@ public class ResourceCollector : MonoBehaviour
         if (!_flourResource.IsProducing)
         {
             Debug.Log("Üretim baþlamadý, slider duruyor.");
+            flourFactoryResourceSlider.gameObject.SetActive(false);
             return;
         }
+        flourFactoryResourceSlider.gameObject.SetActive(true);
         while (_flourResource.IsProducing)
         {
 
@@ -182,21 +184,30 @@ public class ResourceCollector : MonoBehaviour
                 else
                 {
                     Debug.Log("Bu4");
-                    flourFactoryResourceSlider.value = targetValue;
+                    //flourFactoryResourceSlider.value = targetValue;
                     // Eðer yeni hasat baþladýysa, direkt deðeri ata (animasyonsuz)
-                    //flourFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
+                    flourFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
                 }
 
-                await UniTask.Delay(1000); // 1 saniye bekle
+                await UniTask.WhenAny(
+                  UniTask.Delay(1000), // 1 saniye bekleme
+                  UniTask.WaitUntil(() => !_flourResource.IsProducing) // Eðer üretim biterse hemen çýk
+              );
+                if (!_flourResource.IsProducing)
+                {
+                    Debug.Log("Üretim bitti, slider sýfýrlandý.+" + _flourResource.StoredResources.Value);
+                    flourFactoryResourceSlider.DOValue(0f, flourFactoryResourceSlider.value).SetEase(Ease.OutQuad);
+                    //flourFactoryResourceSlider.DOValue(0f, 0.5f).SetEase(Ease.OutQuad);
+                    flourProductionTimerText.text = "Finish";
+                    if (_flourResource.StoredResources.Value == 0)
+                    {
+                        flourFactoryResourceSlider.gameObject.SetActive(false);
+                    }
+                    return;
+                }
                 remainingTime--;
             }
-            if (!_flourResource.IsProducing)
-            {
-                Debug.Log("Üretim bitti, slider sýfýrlandý.");
-                //flourFactoryResourceSlider.DOValue(0f, 0.5f).SetEase(Ease.OutQuad);
-                //flourProductionTimerText.text = "Finish";
-                return;
-            }
+
         }
     }
 
@@ -207,6 +218,8 @@ public class ResourceCollector : MonoBehaviour
     private void UpdateFlourStoredResources(int stored)
     {
         flourResourceCapacityText.text = stored.ToString();  // Hay kapasitesini göster
+        bool shouldBeActive = stored > 0 || _flourResource._flourEntity.currentQueueCount > 0;
+        flourFactoryResourceSlider.gameObject.SetActive(shouldBeActive);
     }
 
 

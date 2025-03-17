@@ -578,6 +578,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: FlourSlider
       objectReference: {fileID: 0}
+    - target: {fileID: 3988507031057370029, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5239945200890011193, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -620,11 +624,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8516935011501871943, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8516935011501871943, guid: 5bb22f74902da8e4bbc9681a9aa43db4, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1367,7 +1371,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &872480907
 RectTransform:
   m_ObjectHideFlags: 0

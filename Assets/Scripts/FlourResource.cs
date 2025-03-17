@@ -8,7 +8,7 @@ using Zenject;
 
 public class FlourResource : ResourceBase
 {
-    private FlourEntity _flourEntity;  // FlourEntity referansý
+    /*private */public FlourEntity _flourEntity;  // FlourEntity referansý
 
     public bool IsProducing => isProducing;
 
@@ -72,8 +72,8 @@ public class FlourResource : ResourceBase
         while (_flourEntity.currentQueueCount > 0 && storedResources.Value < maxCapacity)
         {
             for (int i = productionTime; i > 0; i--)
-            {
-                _resourceCollector.flourProductionTimerText.text = $"{i}s";
+            {                
+                //_resourceCollector.flourProductionTimerText.text = $"{i}s";
                 await UniTask.Delay(1000);
             }
 
@@ -88,10 +88,10 @@ public class FlourResource : ResourceBase
             {
                 Debug.Log("Üretim kuyruðu boþaldý, üretim durduruluyor.");
                 isProducing = false;
-                _resourceCollector.flourProductionTimerText.text = "Finish";
+                //_resourceCollector.flourProductionTimerText.text = "Finish";
                 //_resourceCollector.flourFactoryResourceSlider.value = 0;
                 // Slider'ý sýfýrla
-                _resourceCollector.flourFactoryResourceSlider.DOValue(0f, 0.5f).SetEase(Ease.OutQuad);
+                //_resourceCollector.flourFactoryResourceSlider.DOValue(0f, 0.5f).SetEase(Ease.OutQuad);
                 return;
             }
         }
@@ -140,6 +140,12 @@ public class FlourResource : ResourceBase
         storedResources.Value = 0;
         //OnStoredResourcesChanged?.Invoke(0);
         _resourceManager.AddResource(ResourceType.Flour, collected);
+
+        if (storedResources.Value == 0)
+        {
+            //_resourceCollector.flourFactoryResourceSlider.gameObject.SetActive(false);
+        }
+
         //TotalResourcesCount.Value += collected;
         // Only call Produce() if it's not already running
         if (!isProducing)

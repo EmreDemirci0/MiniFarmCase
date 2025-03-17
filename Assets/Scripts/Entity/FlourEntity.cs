@@ -116,15 +116,16 @@ public class FlourEntity : MonoBehaviour, IEntity
         else
         {
             Debug.Log("Zaten açýkmýs");
+            if (_flourResource != null)
+            {
+                //    ReduceTotalQuantityText();
+                await _flourResource.CollectResources();
+            }
         }
 
 
 
-        if (_flourResource != null)
-        {
-        //    ReduceTotalQuantityText();
-            await _flourResource.CollectResources();
-        }
+       
     }
     public void CloseProductionButton()
     {
