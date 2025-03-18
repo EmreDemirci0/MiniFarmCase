@@ -1,4 +1,6 @@
+using Cysharp.Threading.Tasks;
+
 public interface IEntity
 {
-    void Interact();
+    UniTaskVoid Interact();
 }

@@ -1,19 +1,14 @@
 using Cysharp.Threading.Tasks;
 using UniRx;
-using UnityEngine;
 using Zenject;
-
-public abstract class NonResourceBase : ResourceBase
+public abstract class NonResource : ResourceBase
 {
-
-
     [Inject]
-    public NonResourceBase(ResourceManager resourceManager, ResourceCollector resourceCollector, ResourceType resourceType)
+    public NonResource(ResourceManager resourceManager, ResourceCollector resourceCollector, ResourceType resourceType)
          : base(resourceManager, resourceCollector, resourceType)
     {
 
-
-        var delay = UniTask.DelayFrame(1).ContinueWith(() => //
+        var delay = UniTask.DelayFrame(1).ContinueWith(() => 
          {
              var task = UniTask.WhenAll(
                  Produce(),
@@ -22,42 +17,40 @@ public abstract class NonResourceBase : ResourceBase
          });
     }
 
-
     public override async UniTask Produce()
     {
-        if (isProducing)
+        if (IsProducing)
         {
             return;
         }
 
-        isProducing = true;
+        SetIsProducing(true);
 
-        while (storedResources.Value < maxCapacity)
+        while (StoredResources.Value < MaxCapacity)
         {
-            for (int i = productionTime; i > 0; i--)
+            for (int i = ProductionTime; i > 0; i--)
             {
                 await UniTask.Delay(1000);
             }
 
-            storedResources.Value++;
+            SetStoredResources(StoredResources.Value+1);
         }
 
-        isProducing = false;
+        SetIsProducing(false);
     }
 
     public override async UniTask<int> CollectResources()
     {
-        if (storedResources.Value == 0)
+        if (StoredResources.Value == 0)
         {
             return 0;
         }
 
-        int collected = storedResources.Value;
-        storedResources.Value = 0;
-
+        int collected = StoredResources.Value;
+        SetStoredResources(0);
         _resourceManager.AddResource(resourceType, collected);
 
-        if (!isProducing)
+        if (!IsProducing)
         {
             await Produce();
         }

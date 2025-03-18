@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using System.Collections.Generic;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -31,20 +32,26 @@ public class ResourceCollector : MonoBehaviour
     [SerializeField] private Image breadV1FactoryResourceImage;
     [SerializeField] private TextMeshProUGUI breadV1ResourceCapacityText;
     [SerializeField] private TextMeshProUGUI breadV1ProductionTimerText;
+    [SerializeField] private Slider breadV2FactoryResourceSlider;
+    [SerializeField] private Image breadV2FactoryResourceImage;
+    [SerializeField] private TextMeshProUGUI breadV2ResourceCapacityText;
+    [SerializeField] private TextMeshProUGUI breadV2ProductionTimerText;
 
-    private FlourEntity _currentFlourEntity;
-    private BreadV1Entity _currentBreadV1Entity;
+    private List<ResourceDependentEntity> _resources = new List<ResourceDependentEntity>();
 
 
     [Inject]
     public void Construct(HayEntity hayEntity, FlourEntity flourEntity)
     {
-
+        //BURAYA EL AT BU REZÝÝLÝK NE
+        Debug.Log(" //BURAYA EL AT BU REZÝÝLÝK NE");
         _hayEntity = hayEntity;
         _flourEntity = flourEntity;
 
         hayFactoryResourceImage.sprite = _hayEntity.resourceInfo.resourceSprite;
         flourFactoryResourceImage.sprite = _flourEntity.resourceInfo.resourceSprite;
+        breadV1FactoryResourceImage.sprite = _flourEntity.resourceInfo.resourceSprite;//?
+        breadV2FactoryResourceImage.sprite = _flourEntity.resourceInfo.resourceSprite;//?
 
     }
     private void Start()
@@ -65,32 +72,27 @@ public class ResourceCollector : MonoBehaviour
                 if (entity != null)
                 {
                     //Debug.Log("hit game.name"+hit.transform.name);
-                    if (entity is FlourEntity flourEntity)
+                    if (entity is ResourceDependentEntity resourceDependentEntity)
                     {
-                        // FlourEntity'ye týklanýrsa butonu aktif et
-                        _currentFlourEntity = flourEntity;
-                        _currentFlourEntity.Interact();
+                        if (!_resources.Contains(resourceDependentEntity))
+                        {
+                            _resources.Add(resourceDependentEntity);
+                        }
+                        entity.Interact();
                     }
-                    else if (entity is BreadV1Entity breadEntity)
-                    {
-                        _currentBreadV1Entity = breadEntity;
-                        _currentBreadV1Entity.Interact();
-                    }
-
                     else
                     {
                         entity.Interact();
-                        // Baþka bir yere týklanýrsa aktif olan butonu kapat
-                        if (_currentFlourEntity != null) _currentFlourEntity.CloseProductionButton();
-                        if (_currentBreadV1Entity != null) _currentBreadV1Entity.CloseProductionButton();
+
+                        foreach (var item in _resources)
+                            item.CloseProductionButton();
                     }
                 }
             }
             else
             {
-                // Eðer baþka bir yere týklanmýþsa tüm butonlarý kapat
-                if (_currentFlourEntity != null) _currentFlourEntity.CloseProductionButton();
-                if (_currentBreadV1Entity != null) _currentBreadV1Entity.CloseProductionButton();
+                foreach (var item in _resources)
+                    item.CloseProductionButton();
             }
 
         }
@@ -104,6 +106,8 @@ public class ResourceCollector : MonoBehaviour
             flourProductionTimerText.text = text;
         else if (resourceType == ResourceType.BreadV1)
             breadV1ProductionTimerText.text = text;
+        else if (resourceType == ResourceType.BreadV2)
+            breadV2ProductionTimerText.text = text;
     }
     public void SetSlider(ResourceType resourceType, float targetValue)
     {
@@ -119,57 +123,42 @@ public class ResourceCollector : MonoBehaviour
         {
             breadV1FactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
         }
+        else if (resourceType == ResourceType.BreadV2)
+        {
+            breadV2FactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
+        }
     }
-
-
-    public void SetTotalHayText(int hayCount)
+    public void SetTotalText(ResourceType resourceType, int count)
     {
-        totalHayCountText.text = hayCount.ToString();
+        if (resourceType == ResourceType.Hay)
+            totalHayCountText.text = count.ToString();
+        else if (resourceType == ResourceType.Flour)
+            totalFlourCountText.text = count.ToString();
+        else if (resourceType == ResourceType.BreadV1)//altla ayný
+            totalBreadCountText.text = count.ToString();
+        else if (resourceType == ResourceType.BreadV2)
+            totalBreadCountText.text = count.ToString();
     }
-    public void SetTotalFlourText(int flourCount)
+    public void SetStoredResourcesText(ResourceType resourceType, int stored)
     {
-        totalFlourCountText.text = flourCount.ToString();
-    }
-    public void SetTotalBreadText(int flourCount)
-    {
-        totalBreadCountText.text = flourCount.ToString();
-    }
-    //public void SetHayStoredResourcesText(int stored)
-    //{
-    //    hayResourceCapacityText.text = stored.ToString();
-    //}
-    //public void SetFlourStoredResourcesText(int stored)
-    //{
-    //    flourResourceCapacityText.text = stored.ToString();
-    //}
-    //public void SetBreadV1StoredResourcesText(int stored)
-    //{
-    //    breadV1ResourceCapacityText.text = stored.ToString();
-    //}
-    public void SetStoredResourcesText(ResourceType resourceType,int stored)
-    {
-        if(resourceType==ResourceType.Hay)
-        hayResourceCapacityText.text = stored.ToString();
+        if (resourceType == ResourceType.Hay)
+            hayResourceCapacityText.text = stored.ToString();
         else if (resourceType == ResourceType.Flour)
             flourResourceCapacityText.text = stored.ToString();
         else if (resourceType == ResourceType.BreadV1)
             breadV1ResourceCapacityText.text = stored.ToString();
+        else if (resourceType == ResourceType.BreadV2)
+            breadV2ResourceCapacityText.text = stored.ToString();
     }
-    //public void SetFlourSliderActive(bool isActive)
-    //{
-    //    flourFactoryResourceSlider.gameObject.SetActive(isActive);
-    //}
-    //public void SetBreadV1SliderActive(bool isActive)
-    //{
-    //    breadV1FactoryResourceSlider.gameObject.SetActive(isActive);
-    //}
-    public void SetSliderActive(ResourceType resourceType,bool isActive)
+    public void SetSliderActive(ResourceType resourceType, bool isActive)
     {
-        if (resourceType==ResourceType.Hay)
+        if (resourceType == ResourceType.Hay)
             hayFactoryResourceSlider.gameObject.SetActive(isActive);
         if (resourceType == ResourceType.Flour)
             flourFactoryResourceSlider.gameObject.SetActive(isActive);
         if (resourceType == ResourceType.BreadV1)
             breadV1FactoryResourceSlider.gameObject.SetActive(isActive);
+        if (resourceType == ResourceType.BreadV2)
+            breadV2FactoryResourceSlider.gameObject.SetActive(isActive);
     }
 }

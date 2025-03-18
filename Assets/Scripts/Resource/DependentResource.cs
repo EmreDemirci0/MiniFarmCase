@@ -1,42 +1,18 @@
 using Cysharp.Threading.Tasks;
-using System.Collections;
-using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
-using Zenject;
-
-public class ResourceDependentBase : ResourceBase
+public class DependentResource : ResourceBase
 {
-    
     private ReactiveProperty<int> _queueCount = new ReactiveProperty<int>(0);
     public IReadOnlyReactiveProperty<int> QueueCount => _queueCount;
 
-    public bool IsProducing => isProducing;
-
-    [Inject]
-    public ResourceDependentBase(ResourceManager resourceManager, ResourceCollector resourceCollector,ResourceType resourceType)
+    public DependentResource(ResourceManager resourceManager, ResourceCollector resourceCollector,ResourceType resourceType)
          : base(resourceManager, resourceCollector, resourceType)
     {
-
         StoredResources.Subscribe(_ => SetSliderActive());
         QueueCount.Subscribe(_ => SetSliderActive());
     }
-    //[Inject]
-    //public void Construct(ResourceCollector resourceCollector, ResourceManager resourceManager)
-    //{
-    //    _resourceManager = resourceManager;
-    //    _resourceCollector = resourceCollector;
-
-    //    resourceType = ResourceType.Flour;
-
-
-
-    //    //StoredResources.Subscribe(_resourceCollector.SetFlourStoredResourcesText);
-    //    StoredResources.Subscribe(stored => _resourceCollector.SetStoredResourcesText(resourceType, stored));//bu base classlara alýnabilir
-       
-    //}
-
-
+   
     public override async UniTask Produce()
     {
         if (IsProducing || StoredResources.Value >= MaxCapacity)
@@ -45,40 +21,39 @@ public class ResourceDependentBase : ResourceBase
             return;
         }
 
-        isProducing = true;
+        SetIsProducing(true);
 
-        while (_queueCount.Value > 0 && storedResources.Value < maxCapacity)
+        while (_queueCount.Value > 0 && StoredResources.Value < MaxCapacity)
         {
-            for (int i = productionTime; i > 0; i--)
+            for (int i = ProductionTime; i > 0; i--)
             {
                 await UniTask.Delay(1000);
             }
-
-            storedResources.Value++;//Depoya ekle
+            SetStoredResources(StoredResources.Value+1);//Depoya ekle
             DecreaseQueueCount();//Queue'den cýkar
 
             if (_queueCount.Value <= 0)
             {
                 Debug.Log("Üretim kuyruðu boþaldý, üretim durduruluyor.");
-                isProducing = false;
+                SetIsProducing(false);
                 return;
             }
         }
-        isProducing = false;
+        SetIsProducing(false);
     }
     public override async UniTask<int> CollectResources()
     {
-        if (storedResources.Value == 0)
+        if (StoredResources.Value == 0)
         {
             return 0;
         }
 
-        int collected = storedResources.Value;
-        storedResources.Value = 0;
+        int collected = StoredResources.Value;
+        SetStoredResources(0);
 
         _resourceManager.AddResource(resourceType, collected);
 
-        if (!isProducing)
+        if (!IsProducing)
         {
             await UniTask.WhenAll(
             Produce(),
@@ -110,7 +85,7 @@ public class ResourceDependentBase : ResourceBase
 
     public async UniTask SliderTask()
     {
-        if (!isProducing)
+        if (!IsProducing)
         {
             Debug.Log("Üretim baþlamadý, slider duruyor.");
             return;
@@ -118,7 +93,7 @@ public class ResourceDependentBase : ResourceBase
         while (IsProducing)
         {
             int remainingTime = ProductionTime;
-            while (remainingTime > 0 && isProducing)
+            while (remainingTime > 0 && IsProducing)
             {
                 float targetValue = (float)remainingTime / ProductionTime;
 
@@ -127,7 +102,7 @@ public class ResourceDependentBase : ResourceBase
 
                 await UniTask.WhenAny(
                       UniTask.Delay(1000),
-                      UniTask.WaitUntil(() => !IsProducing) // Eðer üretim biterse hemen çýk
+                      UniTask.WaitUntil(() => !IsProducing) 
                 );
 
                 if (!IsProducing)
@@ -145,8 +120,6 @@ public class ResourceDependentBase : ResourceBase
             }
         }
     }
-
-
 
     public void IncreaseQueueCount()
     {
