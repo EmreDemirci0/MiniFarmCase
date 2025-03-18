@@ -9,14 +9,6 @@ public class GameInstaller : MonoInstaller
     public override void InstallBindings()
     {
 
-        //Container.Bind<ResourceCollector>().FromComponentInHierarchy().AsSingle();
-        //Container.Bind<ResourceUI>().AsSingle();
-
-        //Container.Bind<HayResource>().AsSingle();
-        //Container.Bind<HayEntity>().FromComponentInHierarchy().AsSingle();
-
-        //Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<HayResource>();
-
 
         // ResourceCollector'ý baðlayalým
         Container.Bind<ResourceCollector>().FromComponentInHierarchy().AsSingle();
@@ -29,11 +21,7 @@ public class GameInstaller : MonoInstaller
         Container.Bind<HayEntity>().FromComponentInHierarchy().AsSingle();
         Container.Bind<FlourEntity>().FromComponentInHierarchy().AsSingle();
         Container.Bind<BreadV1Entity>().FromComponentInHierarchy().AsSingle();
-        //Container.Bind<FlourResource>().AsSingle();
-
-        // Fabrikayý baðlayalým
-        //Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<HayResource>(); // Burada HayResource türünü seçiyoruz, istediðiniz gibi deðiþtirebilirsiniz
-        //Container.BindFactory<ResourceBase, GeneralResourceFactory>().To<FlourResource>();
+      
     }
 }
 

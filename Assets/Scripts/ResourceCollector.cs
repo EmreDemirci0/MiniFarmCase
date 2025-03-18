@@ -134,24 +134,42 @@ public class ResourceCollector : MonoBehaviour
     {
         totalBreadCountText.text = flourCount.ToString();
     }
-    public void SetHayStoredResourcesText(int stored)
+    //public void SetHayStoredResourcesText(int stored)
+    //{
+    //    hayResourceCapacityText.text = stored.ToString();
+    //}
+    //public void SetFlourStoredResourcesText(int stored)
+    //{
+    //    flourResourceCapacityText.text = stored.ToString();
+    //}
+    //public void SetBreadV1StoredResourcesText(int stored)
+    //{
+    //    breadV1ResourceCapacityText.text = stored.ToString();
+    //}
+    public void SetStoredResourcesText(ResourceType resourceType,int stored)
     {
+        if(resourceType==ResourceType.Hay)
         hayResourceCapacityText.text = stored.ToString();
+        else if (resourceType == ResourceType.Flour)
+            flourResourceCapacityText.text = stored.ToString();
+        else if (resourceType == ResourceType.BreadV1)
+            breadV1ResourceCapacityText.text = stored.ToString();
     }
-    public void SetFlourStoredResourcesText(int stored)
+    //public void SetFlourSliderActive(bool isActive)
+    //{
+    //    flourFactoryResourceSlider.gameObject.SetActive(isActive);
+    //}
+    //public void SetBreadV1SliderActive(bool isActive)
+    //{
+    //    breadV1FactoryResourceSlider.gameObject.SetActive(isActive);
+    //}
+    public void SetSliderActive(ResourceType resourceType,bool isActive)
     {
-        flourResourceCapacityText.text = stored.ToString();
-    }
-    public void SetBreadV1StoredResourcesText(int stored)
-    {
-        breadV1ResourceCapacityText.text = stored.ToString();
-    }
-    public void SetFlourSliderActive(bool isActive)
-    {
-        flourFactoryResourceSlider.gameObject.SetActive(isActive);
-    }
-    public void SetBreadV1SliderActive(bool isActive)
-    {
-        breadV1FactoryResourceSlider.gameObject.SetActive(isActive);
+        if (resourceType==ResourceType.Hay)
+            hayFactoryResourceSlider.gameObject.SetActive(isActive);
+        if (resourceType == ResourceType.Flour)
+            flourFactoryResourceSlider.gameObject.SetActive(isActive);
+        if (resourceType == ResourceType.BreadV1)
+            breadV1FactoryResourceSlider.gameObject.SetActive(isActive);
     }
 }

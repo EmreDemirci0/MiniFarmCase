@@ -43,6 +43,12 @@ public abstract class ResourceDependentEntity : EntityBase
          .Subscribe(_ => UpdateButtonInteractivity())
          .AddTo(this);
         }
+        else if (requireResource.resourceType == ResourceType.BreadV1)
+        {
+            _resourceManager.TotalBreadCount
+         .Subscribe(_ => UpdateButtonInteractivity())
+         .AddTo(this);
+        }
     }
 
    

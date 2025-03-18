@@ -55,7 +55,6 @@ public class BreadV1Entity : ResourceDependentEntity
             return;
 
         int currentResourceCount = _resourceManager.GetTotalResourceCount(requireResource.resourceType);
-        Debug.Log("UpdateButtonInteractivity içindeki maxCapacity: " + maxCapacity);
         plusProductionOrderButton.interactable = currentResourceCount >= resourceQuantity && _breadV1Resource.QueueCount.Value < maxCapacity;
         minusProductionOrderButton.interactable = _breadV1Resource.QueueCount.Value > 1;
     }
