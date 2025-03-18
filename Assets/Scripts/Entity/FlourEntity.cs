@@ -2,12 +2,12 @@ using Cysharp.Threading.Tasks;
 using Zenject;
 using UniRx;
 using UnityEditor;
-using UnityEngine;
+using UnityEngine; 
 
-public class FlourEntity : ResourceDependentEntity
+public class FlourEntity : ResourceDependentEntity 
 {
     private FlourResource _flourResource;
-
+    
     [Inject]
     public void Construct(FlourResource flourResource)
     {
@@ -19,34 +19,9 @@ public class FlourEntity : ResourceDependentEntity
 
        
         _flourResource.QueueCount.Subscribe(_ => UpdateButtonInteractivity()).AddTo(this);
-        _flourResource.OnQueueCountChanged.Subscribe(count => UpdateProductionOrderText(count)).AddTo(this);
-    }
-    
-    
-    public override void UpdateButtonInteractivity()
-    {
-        if (_flourResource == null || _resourceManager == null) 
-            return; 
+        _flourResource.QueueCount.Subscribe(count => SetProductionOrderText(count)).AddTo(this);
 
-        int currentResourceCount = _resourceManager.GetTotalResourceCount(requireResource.resourceType);
-
-        plusProductionOrderButton.interactable = currentResourceCount >= requireResource.resourceQuantity && _flourResource.QueueCount.Value < maxCapacity;
-        minusProductionOrderButton.interactable = _flourResource.QueueCount.Value > 1;
     }
-    public override async void ProductionPlusButtonClicked()
-    {
-        await _flourResource.AddToQueue(requireResource.resourceType, requireResource.resourceQuantity);
-    }
-
-    public override void ProductionMinusButtonClicked()
-    {
-        _flourResource.RemoveFromQueue(requireResource.resourceType, requireResource.resourceQuantity);
-    }
-    public void UpdateProductionOrderText(int count)
-    { 
-        productionOrderText.text = $"{count}/{maxCapacity}";
-    }
-   
     public async override void Interact()
     {
         if (!isProductionButtonOpen)
@@ -61,6 +36,30 @@ public class FlourEntity : ResourceDependentEntity
                 await _flourResource.CollectResources();
             }
         }
+    }
+
+    public override void UpdateButtonInteractivity()
+    {
+        if (_flourResource == null || _resourceManager == null) 
+            return; 
+
+        int currentResourceCount = _resourceManager.GetTotalResourceCount(requireResource.resourceType);
+
+        plusProductionOrderButton.interactable = currentResourceCount >= resourceQuantity && _flourResource.QueueCount.Value < maxCapacity;
+        minusProductionOrderButton.interactable = _flourResource.QueueCount.Value > 1;
+    }
+    public override async void ProductionPlusButtonClicked()
+    {
+        await _flourResource.AddToQueue(requireResource.resourceType, resourceQuantity);
+    }
+
+    public override void ProductionMinusButtonClicked()
+    {
+        _flourResource.RemoveFromQueue(requireResource.resourceType, resourceQuantity);
+    }
+    public void SetProductionOrderText(int count)
+    { 
+        productionOrderText.text = $"{count}/{maxCapacity}";
     }
     public void CloseProductionButton()
     {

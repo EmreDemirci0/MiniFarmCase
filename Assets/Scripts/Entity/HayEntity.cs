@@ -1,34 +1,25 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Zenject;
-
+ 
 public class HayEntity : NonResourceEntity
 {
     private HayResource _hayResource;
-    private ResourceCollector _resourceCollector;
-   
-
-
 
     [Inject]
-    public void Construct(HayResource hayResource, ResourceCollector resourceCollector)
+    public void Construct(HayResource hayResource)
     {
         _hayResource = hayResource;
-        _hayResource.SetProductionValues(productionTime, maxCapacity);
-
-
-        _resourceCollector = resourceCollector;
+        
+        _hayResource.SetProductionValues(productionTime, maxCapacity);   
     }
-    private async void Start()
+   
+    private void Update()
     {
-        await UniTask.WhenAll(
-            _hayResource.Produce(),
-            _resourceCollector.StartProgressUpdateLoop()
-        );
+        //Debug.Log("ProductionTime:"+ _hayResource.ProductionTimeLeft);
     }
     public async override void Interact()
-    {
-        
+    {   
         if (_hayResource != null)
         {
             await _hayResource.CollectResources();

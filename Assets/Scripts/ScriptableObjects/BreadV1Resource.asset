@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 07225d95594c6914fa173a3733c18910, type: 3}
-  m_Name: RequireHayResource
+  m_Name: BreadV1Resource
   m_EditorClassIdentifier: 
-  resourceType: 1
-  resourceSprite: {fileID: 21300000, guid: be5df5669c8834b66a502e016ef957ff, type: 3}
+  resourceType: 3
+  resourceSprite: {fileID: 21300000, guid: 11d51e1b08e7d4a5d9e8935346113980, type: 3}

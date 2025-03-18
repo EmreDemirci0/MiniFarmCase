@@ -7,6 +7,5 @@ using UnityEngine;
 public class SCResources : ScriptableObject
 {
     public ResourceType resourceType;
-    public int resourceQuantity;
     public Sprite resourceSprite;
 }

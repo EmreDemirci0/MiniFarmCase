@@ -1,15 +1,12 @@
 using Cysharp.Threading.Tasks;
-using DG.Tweening;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UniRx;
 using UnityEngine;
 using Zenject;
- 
-public class FlourResource : ResourceBase
-{ 
+
+public class BreadV1Resource : ResourceBase
+{
     private ResourceManager _resourceManager;
     private ResourceCollector _resourceCollector;
 
@@ -24,17 +21,16 @@ public class FlourResource : ResourceBase
         _resourceManager = resourceManager;
         _resourceCollector = resourceCollector;
 
-        resourceType = ResourceType.Flour;
+        resourceType = ResourceType.BreadV1;
 
 
 
-        StoredResources.Subscribe(_resourceCollector.SetFlourStoredResourcesText);
-        StoredResources.Subscribe(_ => SetFlourSliderActive());
-        QueueCount.Subscribe(_ => SetFlourSliderActive());
+        StoredResources.Subscribe(_resourceCollector.SetBreadV1StoredResourcesText);
+        StoredResources.Subscribe(_ => SetBreadV1SliderActive());
+        QueueCount.Subscribe(_ => SetBreadV1SliderActive());
     }
 
-
-    public override async UniTask Produce()
+    public async override UniTask Produce()
     {
         if (IsProducing || StoredResources.Value >= MaxCapacity)
         {
@@ -69,7 +65,7 @@ public class FlourResource : ResourceBase
         {
             return 0;
         }
-        
+
         int collected = storedResources.Value;
         storedResources.Value = 0;
 
@@ -79,11 +75,53 @@ public class FlourResource : ResourceBase
         {
             await UniTask.WhenAll(
             Produce(),
-            FlourSliderTask()
+            BreadSliderTask()
             );
         }
         return collected;
     }
+
+    public async UniTask BreadSliderTask()
+    {
+        Debug.Log("buna girdi");
+        if (!isProducing)
+        {
+            Debug.Log("Üretim baþlamadý, slider duruyor.");
+            return;
+        }
+        while (IsProducing)
+        {
+            Debug.Log("buna girdi2");
+            int remainingTime = ProductionTime;
+            while (remainingTime > 0 && isProducing)
+            {
+                Debug.Log("buna girdi3");
+                float targetValue = (float)remainingTime / ProductionTime;
+
+                _resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
+                _resourceCollector.SetSlider(resourceType, targetValue);
+
+                await UniTask.WhenAny(
+                      UniTask.Delay(1000),
+                      UniTask.WaitUntil(() => !IsProducing) // Eðer üretim biterse hemen çýk
+                    );
+                Debug.Log("buna girdi4");
+                if (!IsProducing)
+                {
+                    _resourceCollector.SetSlider(resourceType, 1f);
+                    if (StoredResources.Value >= MaxCapacity)
+                        _resourceCollector.SetProductionTimerText(resourceType, "FULL");
+                    else
+                        _resourceCollector.SetProductionTimerText(resourceType, "FINISH");
+
+                    return;
+                }
+                remainingTime--;
+
+            }
+        }
+    }
+
     public async UniTask AddToQueue(ResourceType type, int quantity)
     {
         _resourceManager.RemoveResource(type, quantity);
@@ -94,7 +132,7 @@ public class FlourResource : ResourceBase
 
         await UniTask.WhenAll(
             Produce(),
-            FlourSliderTask()
+            BreadSliderTask()
         );
     }
     public void RemoveFromQueue(ResourceType type, int quantity)
@@ -104,47 +142,6 @@ public class FlourResource : ResourceBase
         DecreaseQueueCount();
         _resourceManager.AddResource(type, quantity);
     }
-
-    public async UniTask FlourSliderTask()
-    {
-        if (!isProducing)
-        {
-            Debug.Log("Üretim baþlamadý, slider duruyor.");
-            return;
-        }
-        while (IsProducing)
-        {
-            int remainingTime = ProductionTime;
-            while (remainingTime > 0 && isProducing)
-            {
-                float targetValue = (float)remainingTime / ProductionTime;
-
-                _resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
-                _resourceCollector.SetSlider(resourceType,targetValue);
-
-                await UniTask.WhenAny(
-                      UniTask.Delay(1000),
-                      UniTask.WaitUntil(() => !IsProducing) // Eðer üretim biterse hemen çýk
-                    );
-
-                if (!IsProducing)
-                {
-                    _resourceCollector.SetSlider(resourceType, 1f);
-                    if (StoredResources.Value >= MaxCapacity)
-                        _resourceCollector.SetProductionTimerText(resourceType,"FULL");
-                    else
-                        _resourceCollector.SetProductionTimerText(resourceType,"FINISH");
-
-                    return;
-                }
-                remainingTime--;
-
-            }
-        }
-    }
-
-
-
     public void IncreaseQueueCount()
     {
         _queueCount.Value++;
@@ -157,9 +154,10 @@ public class FlourResource : ResourceBase
             _queueCount.Value--;
         }
     }
-    private void SetFlourSliderActive()
+    private void SetBreadV1SliderActive()
     {
+        Debug.Log("Girdi: "+ IsProducing + " : "+StoredResources.Value+" : " +QueueCount.Value);
         bool active = !(!IsProducing && StoredResources.Value <= 0 && QueueCount.Value <= 0);
-        _resourceCollector.SetFlourSliderActive(active);
+        _resourceCollector.SetBreadV1SliderActive(active);
     }
 }

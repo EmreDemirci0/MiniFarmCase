@@ -2,5 +2,7 @@ public enum ResourceType
 {
     None,
     Hay,
-    Flour
+    Flour,
+    BreadV1,
+    BreadV2
 }

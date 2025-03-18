@@ -4,16 +4,23 @@ using Zenject;
 
 public class ResourceManager : MonoBehaviour
 {
-    // ReactiveProperty kullanarak bu deðerleri dinamik yapalým
+    private ResourceCollector _resourceCollector;
+
     public ReactiveProperty<int> TotalHayCount { get; private set; } = new ReactiveProperty<int>(100);
-    public ReactiveProperty<int> TotalFlourCount { get; private set; } = new ReactiveProperty<int>(0);
+    public ReactiveProperty<int> TotalFlourCount { get; private set; } = new ReactiveProperty<int>(100);
+    public ReactiveProperty<int> TotalBreadCount { get; private set; } = new ReactiveProperty<int>(0);
+
 
     [Inject]
-    private void Construct()
+    public void Construct(ResourceCollector resourceCollector)
     {
-        // Eðer baþka baðýmlýlýk varsa burada alabiliriz.
-    }
+        _resourceCollector = resourceCollector;
 
+        TotalHayCount.Subscribe(hayCount => _resourceCollector.SetTotalHayText(hayCount)).AddTo(this);
+        TotalFlourCount.Subscribe(flourCount => _resourceCollector.SetTotalFlourText(flourCount)).AddTo(this);
+        TotalBreadCount.Subscribe(flourCount => _resourceCollector.SetTotalBreadText(flourCount)).AddTo(this);
+    }
+   
     public int GetTotalResourceCount(ResourceType resourceType)
     {
         switch (resourceType)
@@ -22,6 +29,8 @@ public class ResourceManager : MonoBehaviour
                 return TotalHayCount.Value;
             case ResourceType.Flour:
                 return TotalFlourCount.Value;
+            case ResourceType.BreadV1:
+                return TotalBreadCount.Value;
             default:
                 return 0;
         }
@@ -36,6 +45,9 @@ public class ResourceManager : MonoBehaviour
                 break;
             case ResourceType.Flour:
                 TotalFlourCount.Value += quantity;
+                break;
+            case ResourceType.BreadV1:
+                TotalBreadCount.Value += quantity;
                 break;
         }
     }
@@ -55,6 +67,13 @@ public class ResourceManager : MonoBehaviour
                 if (TotalFlourCount.Value >= quantity)
                 {
                     TotalFlourCount.Value -= quantity;
+                    return true;
+                }
+                break;
+            case ResourceType.BreadV1:
+                if (TotalBreadCount.Value >= quantity)
+                {
+                    TotalBreadCount.Value -= quantity;
                     return true;
                 }
                 break;

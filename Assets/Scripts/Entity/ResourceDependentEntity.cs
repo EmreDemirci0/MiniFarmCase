@@ -11,6 +11,7 @@ public abstract class ResourceDependentEntity : EntityBase
     protected ResourceManager _resourceManager;
 
     [SerializeField] protected SCResources requireResource;
+    [SerializeField] protected int resourceQuantity;
     [SerializeField] protected TextMeshProUGUI productionOrderText;
     [SerializeField] protected GameObject productionButtonsParent;
     [SerializeField] protected Button plusProductionOrderButton;
@@ -25,7 +26,7 @@ public abstract class ResourceDependentEntity : EntityBase
         _resourceManager = resourceManager;
 
         resourceProductionImage.sprite = requireResource.resourceSprite;
-        resourceProductionQuantityText.text = "x" + requireResource.resourceQuantity.ToString();
+        resourceProductionQuantityText.text = "x" + resourceQuantity.ToString();
 
         plusProductionOrderButton.onClick.AddListener(ProductionPlusButtonClicked);
         minusProductionOrderButton.onClick.AddListener(ProductionMinusButtonClicked);

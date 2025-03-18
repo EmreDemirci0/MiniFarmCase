@@ -24,9 +24,11 @@ public class GameInstaller : MonoInstaller
         // ResourceBase ve alt türlerini baðlayalým
         Container.Bind<HayResource>().AsSingle();
         Container.Bind<FlourResource>().AsSingle();
+        Container.Bind<BreadV1Resource>().AsSingle();
 
         Container.Bind<HayEntity>().FromComponentInHierarchy().AsSingle();
         Container.Bind<FlourEntity>().FromComponentInHierarchy().AsSingle();
+        Container.Bind<BreadV1Entity>().FromComponentInHierarchy().AsSingle();
         //Container.Bind<FlourResource>().AsSingle();
 
         // Fabrikayý baðlayalým

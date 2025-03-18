@@ -11,64 +11,54 @@ public class ResourceCollector : MonoBehaviour
 {
 
     private Camera _camera;
-    private HayResource _hayResource;
-    private FlourResource _flourResource;
+    private HayEntity _hayEntity;
+    private FlourEntity _flourEntity;
 
     [SerializeField] private TextMeshProUGUI totalHayCountText;
     [SerializeField] private Slider hayFactoryResourceSlider;
+    [SerializeField] private Image hayFactoryResourceImage;
     [SerializeField] private TextMeshProUGUI hayResourceCapacityText;
     [SerializeField] private TextMeshProUGUI hayProductionTimerText;
 
     [SerializeField] private TextMeshProUGUI totalFlourCountText;
-    [SerializeField] private  /*public*/ Slider flourFactoryResourceSlider;
+    [SerializeField] private Slider flourFactoryResourceSlider;
+    [SerializeField] private Image flourFactoryResourceImage;
     [SerializeField] private TextMeshProUGUI flourResourceCapacityText;
-    [SerializeField] private/*public*/ TextMeshProUGUI flourProductionTimerText;
+    [SerializeField] private TextMeshProUGUI flourProductionTimerText;
+
+    [SerializeField] private TextMeshProUGUI totalBreadCountText;
+    [SerializeField] private Slider breadV1FactoryResourceSlider;
+    [SerializeField] private Image breadV1FactoryResourceImage;
+    [SerializeField] private TextMeshProUGUI breadV1ResourceCapacityText;
+    [SerializeField] private TextMeshProUGUI breadV1ProductionTimerText;
 
     private FlourEntity _currentFlourEntity;
+    private BreadV1Entity _currentBreadV1Entity;
 
-    private ResourceManager _resourceManager;
 
     [Inject]
-    public void Construct(HayResource hayResource, FlourResource flourResource, ResourceManager resourceManager)
+    public void Construct(HayEntity hayEntity, FlourEntity flourEntity)
     {
-        _hayResource = hayResource;
-        _flourResource = flourResource;
-        _resourceManager = resourceManager;
+
+        _hayEntity = hayEntity;
+        _flourEntity = flourEntity;
+
+        hayFactoryResourceImage.sprite = _hayEntity.resourceInfo.resourceSprite;
+        flourFactoryResourceImage.sprite = _flourEntity.resourceInfo.resourceSprite;
+
     }
     private void Start()
     {
-        _hayResource.StoredResources.Subscribe(UpdateHayStoredResources).AddTo(this);
-        _flourResource.StoredResources.Subscribe(UpdateFlourStoredResources).AddTo(this);
-
-
-        _flourResource.StoredResources.Subscribe(_ => UpdateFlourSlider()).AddTo(this);
-        _flourResource.QueueCount.Subscribe(_ => UpdateFlourSlider()).AddTo(this);
-
-
-        // Hay count'ý ve Flour count'ý güncellemeleri için dinliyoruz
-        _resourceManager.TotalHayCount
-            .Subscribe(hayCount => totalHayCountText.text = hayCount.ToString())
-            .AddTo(this);
-
-        _resourceManager.TotalFlourCount
-            .Subscribe(flourCount => totalFlourCountText.text = flourCount.ToString())
-            .AddTo(this);
-    }
-    private void Awake()
-    {
         _camera = Camera.main;
-
-
     }
     private void Update()
     {
-        //Debug.Log("isproduct:" + _flourResource.IsProducing);
         if (Input.GetMouseButtonDown(0))
         {
             RaycastHit hit;
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
-
+            //burayý refactor !!!
             if (Physics.Raycast(ray, out hit))
             {
                 IEntity entity = hit.collider.GetComponent<IEntity>();
@@ -81,139 +71,87 @@ public class ResourceCollector : MonoBehaviour
                         _currentFlourEntity = flourEntity;
                         _currentFlourEntity.Interact();
                     }
+                    else if (entity is BreadV1Entity breadEntity)
+                    {
+                        _currentBreadV1Entity = breadEntity;
+                        _currentBreadV1Entity.Interact();
+                    }
 
                     else
                     {
                         entity.Interact();
                         // Baþka bir yere týklanýrsa aktif olan butonu kapat
-                        if (_currentFlourEntity != null)
-                        {
-                            _currentFlourEntity.CloseProductionButton();
-                        }
+                        if (_currentFlourEntity != null) _currentFlourEntity.CloseProductionButton();
+                        if (_currentBreadV1Entity != null) _currentBreadV1Entity.CloseProductionButton();
                     }
                 }
             }
             else
             {
                 // Eðer baþka bir yere týklanmýþsa tüm butonlarý kapat
-                if (_currentFlourEntity != null)
-                {
-                    _currentFlourEntity.CloseProductionButton();
-                }
+                if (_currentFlourEntity != null) _currentFlourEntity.CloseProductionButton();
+                if (_currentBreadV1Entity != null) _currentBreadV1Entity.CloseProductionButton();
             }
 
         }
     }
 
-
-    public async UniTask StartProgressUpdateLoop()
+    public void SetProductionTimerText(ResourceType resourceType, string text)
     {
-        while (true)
+        if (resourceType == ResourceType.Hay)
+            hayProductionTimerText.text = text;
+        else if (resourceType == ResourceType.Flour)
+            flourProductionTimerText.text = text;
+        else if (resourceType == ResourceType.BreadV1)
+            breadV1ProductionTimerText.text = text;
+    }
+    public void SetSlider(ResourceType resourceType, float targetValue)
+    {
+        if (resourceType == ResourceType.Hay)
         {
-
-            // Kapasiteyi kontrol et
-            if (_hayResource.StoredResources.Value >= _hayResource.MaxCapacity)
-            {
-                hayProductionTimerText.text = "FULL"; // FULL yazýsý göster
-                hayFactoryResourceSlider.DOValue(1f, 0.5f).SetEase(Ease.OutQuad); // Slider'ý FULL yap
-            }
-            else
-            {
-
-                int remainingTime = _hayResource.ProductionTime;
-                // Yeni hasat baþladýðýnda slider'ý anýnda sýfýrla (animasyonsuz)
-                hayFactoryResourceSlider.value = 0f;
-
-                while (remainingTime > 0)
-                {
-                    //Debug.Log("Burada4:" + remainingTime);
-                    hayProductionTimerText.text = remainingTime + "s";
-
-                    float targetValue = (float)remainingTime / _hayResource.ProductionTime;
-
-                    // Animasyonu 5-4-3-2-1 sýrasýyla yap
-                    if (remainingTime < _hayResource.ProductionTime)
-                    {
-                        hayFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
-                    }
-                    else
-                    {
-                        // Eðer yeni hasat baþladýysa, direkt deðeri ata (animasyonsuz)
-                        hayFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
-                    }
-
-                    await UniTask.Delay(1000); // 1 saniye bekle
-                    remainingTime--;
-                }
-            }
-            await UniTask.Yield(); // Frame kaçýrmamak için bekleme
+            hayFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
         }
-    }
-    public async UniTask FlourSliderTask()
-    {
-        if (!_flourResource.IsProducing)
+        else if (resourceType == ResourceType.Flour)
         {
-            Debug.Log("Üretim baþlamadý, slider duruyor.");
-            return;
+            flourFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
         }
-        while (_flourResource.IsProducing)
+        else if (resourceType == ResourceType.BreadV1)
         {
-            int remainingTime = _flourResource.ProductionTime;
-            flourFactoryResourceSlider.DOValue(0, flourFactoryResourceSlider.value);
-
-            while (remainingTime > 0 && _flourResource.IsProducing)
-            {
-                flourProductionTimerText.text = remainingTime + "s";
-
-                float targetValue = (float)remainingTime / _flourResource.ProductionTime;
-
-                flourFactoryResourceSlider.DOKill();
-                flourFactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
-
-                await UniTask.WhenAny(
-                  UniTask.Delay(1000), // 1 saniye bekleme
-                  UniTask.WaitUntil(() => !_flourResource.IsProducing) // Eðer üretim biterse hemen çýk
-                );
-
-                if (!_flourResource.IsProducing)
-                {
-                    if (_flourResource.StoredResources.Value >= _flourResource.MaxCapacity)
-                    {
-                        //Debug.Log("Üretim bitti, depo FULL oldu.");
-                        flourFactoryResourceSlider.DOKill();
-                        flourFactoryResourceSlider.DOValue(1f, 0.3f).SetEase(Ease.Linear); 
-                        flourProductionTimerText.text = "FULL";
-                    }
-                    else
-                    {
-                        //Debug.Log("Üretim bitti, slider sýfýrlandý.");
-                        flourFactoryResourceSlider.DOKill();
-                        flourFactoryResourceSlider.DOValue(1, .3f).SetEase(Ease.Linear);
-                        flourProductionTimerText.text = "FINISH"; 
-                    }
-                    return;
-                }
-                remainingTime--;
-            }
-
+            breadV1FactoryResourceSlider.DOValue(targetValue, 1f).SetEase(Ease.Linear);
         }
     }
 
-    private void UpdateHayStoredResources(int stored)
-    {
-        hayResourceCapacityText.text = stored.ToString();  // Hay kapasitesini göster
-    }
-    private void UpdateFlourStoredResources(int stored)
-    {
-        flourResourceCapacityText.text = stored.ToString();  // Flour kapasitesini göster
-    }
-    public void UpdateFlourSlider()
-    {
-        //Debug.Log("GÝRDÝKK: " + _flourResource.IsProducing + " STORED" + _flourResource.StoredResources.Value);
-        bool active = !(!(_flourResource.IsProducing) && _flourResource.StoredResources.Value <= 0 && _flourResource.QueueCount.Value <= 0);
-        flourFactoryResourceSlider.gameObject.SetActive(active);
-    }
 
-
-
+    public void SetTotalHayText(int hayCount)
+    {
+        totalHayCountText.text = hayCount.ToString();
+    }
+    public void SetTotalFlourText(int flourCount)
+    {
+        totalFlourCountText.text = flourCount.ToString();
+    }
+    public void SetTotalBreadText(int flourCount)
+    {
+        totalBreadCountText.text = flourCount.ToString();
+    }
+    public void SetHayStoredResourcesText(int stored)
+    {
+        hayResourceCapacityText.text = stored.ToString();
+    }
+    public void SetFlourStoredResourcesText(int stored)
+    {
+        flourResourceCapacityText.text = stored.ToString();
+    }
+    public void SetBreadV1StoredResourcesText(int stored)
+    {
+        breadV1ResourceCapacityText.text = stored.ToString();
+    }
+    public void SetFlourSliderActive(bool isActive)
+    {
+        flourFactoryResourceSlider.gameObject.SetActive(isActive);
+    }
+    public void SetBreadV1SliderActive(bool isActive)
+    {
+        breadV1FactoryResourceSlider.gameObject.SetActive(isActive);
+    }
 }
