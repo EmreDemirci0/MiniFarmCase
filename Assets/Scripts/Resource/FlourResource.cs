@@ -1,7 +1,7 @@
 public class FlourResource : DependentResource
 {
-    public FlourResource(ResourceManager resourceManager, ResourceCollector resourceCollector) 
-        : base(resourceManager, resourceCollector, ResourceType.Flour)
+    public FlourResource(ResourceManager resourceManager,  FlourEntity entity) 
+        : base(resourceManager, entity)
     {
     }
 }

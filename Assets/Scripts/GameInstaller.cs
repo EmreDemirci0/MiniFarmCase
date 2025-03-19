@@ -19,6 +19,7 @@ public class GameInstaller : MonoInstaller
         Container.Bind<BreadV1Entity>().FromComponentInHierarchy().AsSingle();
         Container.Bind<BreadV2Entity>().FromComponentInHierarchy().AsSingle();
 
+
     }
 }
 

@@ -6,8 +6,8 @@ public class DependentResource : ResourceBase
     private ReactiveProperty<int> _queueCount = new ReactiveProperty<int>(0);
     public IReadOnlyReactiveProperty<int> QueueCount => _queueCount;
 
-    public DependentResource(ResourceManager resourceManager, ResourceCollector resourceCollector,ResourceType resourceType)
-         : base(resourceManager, resourceCollector, resourceType)
+    public DependentResource(ResourceManager resourceManager,  EntityBase entityBase)
+         : base(resourceManager, entityBase)
     {
         StoredResources.Subscribe(_ => SetSliderActive());
         QueueCount.Subscribe(_ => SetSliderActive());
@@ -97,8 +97,10 @@ public class DependentResource : ResourceBase
             {
                 float targetValue = (float)remainingTime / ProductionTime;
 
-                _resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
-                _resourceCollector.SetSlider(resourceType, targetValue);
+                _entityBase.SetProductionTimerText(remainingTime + "s");
+                _entityBase.SetSliderValue(targetValue);
+                //_resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
+                //_resourceCollector.SetSlider(resourceType, targetValue);
 
                 await UniTask.WhenAny(
                       UniTask.Delay(1000),
@@ -107,11 +109,14 @@ public class DependentResource : ResourceBase
 
                 if (!IsProducing)
                 {
-                    _resourceCollector.SetSlider(resourceType, 1f);
+                    _entityBase.SetSliderValue(1);
+                    //_resourceCollector.SetSlider(resourceType, 1f);
                     if (StoredResources.Value >= MaxCapacity)
-                        _resourceCollector.SetProductionTimerText(resourceType, "FULL");
+                        //_resourceCollector.SetProductionTimerText(resourceType, "FULL");
+                    _entityBase.SetProductionTimerText("FULL");
                     else
-                        _resourceCollector.SetProductionTimerText(resourceType, "FINISH");
+                        //_resourceCollector.SetProductionTimerText(resourceType, "FINISH");
+                    _entityBase.SetProductionTimerText("FINISH");
 
                     return;
                 }
@@ -136,6 +141,7 @@ public class DependentResource : ResourceBase
     private void SetSliderActive()
     {
         bool active = !(!IsProducing && StoredResources.Value <= 0 && QueueCount.Value <= 0);
-        _resourceCollector.SetSliderActive(resourceType,active);
+        _entityBase.UpdateSliderSetActive(active);
+        
     }
 }

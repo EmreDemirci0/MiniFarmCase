@@ -1,11 +1,12 @@
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UniRx;
 
 public abstract class ResourceBase
 {
     protected ResourceManager _resourceManager;
-    protected ResourceCollector _resourceCollector;
     protected ResourceType resourceType;
+    protected EntityBase _entityBase;
 
     private int maxCapacity = 5; // Fabrikanýn kapasitesi
     public int MaxCapacity => maxCapacity;
@@ -13,32 +14,39 @@ public abstract class ResourceBase
     private int productionTime = 150; // Üretim süresi (saniye)
     public int ProductionTime => productionTime;
 
+   
+
+    private bool isProducing = false;
+    public bool IsProducing => isProducing;
+    
+
+    private IntReactiveProperty storedResources = new IntReactiveProperty(0);
+    public IReadOnlyReactiveProperty<int> StoredResources => storedResources;
+    
+
+    protected ResourceBase(ResourceManager resourceManager, EntityBase entityBase)
+    {
+        _resourceManager = resourceManager;
+        _entityBase = entityBase;
+        this.resourceType = _entityBase.resourceInfo.resourceType;
+
+        StoredResources.Subscribe(stored => _entityBase.SetResourceCapacityText(stored));
+        SetStoredResources(StoredResources.Value);
+    }
+
+    protected void SetIsProducing(bool active) //setter
+    {
+        isProducing = active;
+    }
+    protected void SetStoredResources(int value) //setter
+    {
+        storedResources.Value = value;
+        //_entityBase.SetResourceCapacityText(StoredResources.Value);
+    }
     public void SetProductionValues(int productionTime, int maxCapacity)
     {
         this.productionTime = productionTime;
         this.maxCapacity = maxCapacity;
-    }
-
-    private bool isProducing = false;
-    public bool IsProducing => isProducing;
-    protected void SetIsProducing(bool active)
-    {
-        isProducing = active;
-    }
-
-    private IntReactiveProperty storedResources = new IntReactiveProperty(0);
-    public IReadOnlyReactiveProperty<int> StoredResources => storedResources;
-    protected void SetStoredResources(int value)
-    {
-        storedResources.Value = value;
-    }
-    protected ResourceBase(ResourceManager resourceManager, ResourceCollector resourceCollector, ResourceType resourceType)
-    {
-        _resourceManager = resourceManager;
-        _resourceCollector = resourceCollector;
-        this.resourceType = resourceType;
-
-        StoredResources.Subscribe(stored => _resourceCollector.SetStoredResourcesText(resourceType, stored));
     }
     public abstract UniTask Produce(); 
     public abstract UniTask<int> CollectResources();

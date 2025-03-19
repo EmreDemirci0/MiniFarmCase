@@ -656,6 +656,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceInfo: {fileID: 11400000, guid: 43b5ca79a13625b4ca351c93f14e472c, type: 2}
+  factoryResourceSlider: {fileID: 432857710}
+  factoryResourceImage: {fileID: 1487501453}
+  resourceCapacityText: {fileID: 236883706}
+  productionTimerText: {fileID: 1583976382}
   productionTime: 10
   maxCapacity: 20
   requireResource: {fileID: 11400000, guid: 21899342312c2844a9cdb0155d06cf9e, type: 2}
@@ -689,6 +693,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceInfo: {fileID: 11400000, guid: b446ea995043b7c4e97a06f13bfa60e3, type: 2}
+  factoryResourceSlider: {fileID: 1296741539387903456}
+  factoryResourceImage: {fileID: 143278800}
+  resourceCapacityText: {fileID: 8083627709887222043}
+  productionTimerText: {fileID: 1296741539075442116}
   productionTime: 15
   maxCapacity: 5
 --- !u!1001 &413870296
@@ -1157,25 +1165,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d39a60e856fe270488bf4170801c4939, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalHayCountText: {fileID: 433440881}
-  hayFactoryResourceSlider: {fileID: 1296741539387903456}
-  hayFactoryResourceImage: {fileID: 143278800}
-  hayResourceCapacityText: {fileID: 8083627709887222043}
-  hayProductionTimerText: {fileID: 1296741539075442116}
-  totalFlourCountText: {fileID: 846312748}
-  flourFactoryResourceSlider: {fileID: 1170134707}
-  flourFactoryResourceImage: {fileID: 195230719}
-  flourResourceCapacityText: {fileID: 1367187003}
-  flourProductionTimerText: {fileID: 1158715143}
-  totalBreadCountText: {fileID: 1371989905}
-  breadV1FactoryResourceSlider: {fileID: 432857710}
-  breadV1FactoryResourceImage: {fileID: 1487501453}
-  breadV1ResourceCapacityText: {fileID: 236883706}
-  breadV1ProductionTimerText: {fileID: 1583976382}
-  breadV2FactoryResourceSlider: {fileID: 1266785906}
-  breadV2FactoryResourceImage: {fileID: 919039908}
-  breadV2ResourceCapacityText: {fileID: 1790117300}
-  breadV2ProductionTimerText: {fileID: 1932327984}
 --- !u!1 &548041992
 GameObject:
   m_ObjectHideFlags: 0
@@ -3250,6 +3239,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d484d00993d4e1946826c5d69cccb0c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  totalHayCountText: {fileID: 433440881}
+  totalFlourCountText: {fileID: 846312748}
+  totalBreadCountText: {fileID: 1371989905}
 --- !u!4 &1512903227
 Transform:
   m_ObjectHideFlags: 0
@@ -3294,6 +3286,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceInfo: {fileID: 11400000, guid: 43b5ca79a13625b4ca351c93f14e472c, type: 2}
+  factoryResourceSlider: {fileID: 1266785906}
+  factoryResourceImage: {fileID: 919039908}
+  resourceCapacityText: {fileID: 1790117300}
+  productionTimerText: {fileID: 1932327984}
   productionTime: 10
   maxCapacity: 10
   requireResource: {fileID: 11400000, guid: 21899342312c2844a9cdb0155d06cf9e, type: 2}
@@ -3302,7 +3298,7 @@ MonoBehaviour:
   productionButtonsParent: {fileID: 1963611703}
   plusProductionOrderButton: {fileID: 2063501964}
   minusProductionOrderButton: {fileID: 549717984}
-  resourceProductionImage: {fileID: 919039908}
+  resourceProductionImage: {fileID: 2099550781}
   resourceProductionQuantityText: {fileID: 2063501961}
 --- !u!1 &1659521825
 GameObject:
@@ -3411,6 +3407,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceInfo: {fileID: 11400000, guid: 21899342312c2844a9cdb0155d06cf9e, type: 2}
+  factoryResourceSlider: {fileID: 1170134707}
+  factoryResourceImage: {fileID: 195230719}
+  resourceCapacityText: {fileID: 1367187003}
+  productionTimerText: {fileID: 1158715143}
   productionTime: 5
   maxCapacity: 5
   requireResource: {fileID: 11400000, guid: b446ea995043b7c4e97a06f13bfa60e3, type: 2}
@@ -4436,6 +4436,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2075021475}
   m_CullTransparentMesh: 1
+--- !u!114 &2099550781 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7912471086090296523, guid: 3e9ae15f282399b4ea56b0c5e8781234, type: 3}
+  m_PrefabInstance: {fileID: 2063501959}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &47713801930882234 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8724973369181167030, guid: 2a5fb664e51fe9f4d8d0d975bf6a58de, type: 3}

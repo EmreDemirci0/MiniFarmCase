@@ -1,13 +1,14 @@
 using Cysharp.Threading.Tasks;
 using UniRx;
-using Zenject;
+using Zenject; 
 public abstract class NonResource : ResourceBase
 {
+    
     [Inject]
-    public NonResource(ResourceManager resourceManager, ResourceCollector resourceCollector, ResourceType resourceType)
-         : base(resourceManager, resourceCollector, resourceType)
+    public NonResource(ResourceManager resourceManager , EntityBase entityBase)
+         : base(resourceManager, entityBase)
     {
-
+     
         var delay = UniTask.DelayFrame(1).ContinueWith(() => 
          {
              var task = UniTask.WhenAll(
@@ -65,8 +66,8 @@ public abstract class NonResource : ResourceBase
 
             if (StoredResources.Value >= MaxCapacity)
             {
-                _resourceCollector.SetProductionTimerText(resourceType, "FULL");
-                _resourceCollector.SetSlider(resourceType, 1);
+                _entityBase.SetProductionTimerText("FULL");
+                _entityBase.SetSliderValue(1);
             }
             else
             {
@@ -74,10 +75,11 @@ public abstract class NonResource : ResourceBase
 
                 while (remainingTime > 0)
                 {
-                    _resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
+                    _entityBase.SetProductionTimerText(remainingTime + "s");
                     float targetValue = (float)remainingTime / ProductionTime;
 
-                    _resourceCollector.SetSlider(resourceType, targetValue);
+                    _entityBase.SetSliderValue(targetValue);
+
 
                     await UniTask.Delay(1000);
                     remainingTime--;

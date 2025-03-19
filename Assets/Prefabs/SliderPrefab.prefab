@@ -287,7 +287,7 @@ GameObject:
   - component: {fileID: 1415997605968970670}
   - component: {fileID: 5239945200890011193}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -362,7 +362,7 @@ GameObject:
   - component: {fileID: 9040369838988259234}
   - component: {fileID: 6100540394737357152}
   m_Layer: 5
-  m_Name: Text
+  m_Name: CapacityText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -630,7 +630,7 @@ GameObject:
   - component: {fileID: 1160960233006076543}
   - component: {fileID: 8484708795954006735}
   m_Layer: 5
-  m_Name: Text
+  m_Name: TimerText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

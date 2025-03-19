@@ -1,28 +1,40 @@
 using System;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using Zenject;
 
 public class ResourceManager : MonoBehaviour
 {
-    private ResourceCollector _resourceCollector;
-
+  
     public ReactiveProperty<int> TotalHayCount { get; private set; } = new ReactiveProperty<int>(100);
     public ReactiveProperty<int> TotalFlourCount { get; private set; } = new ReactiveProperty<int>(100);
     public ReactiveProperty<int> TotalBreadCount { get; private set; } = new ReactiveProperty<int>(0);
 
+    [SerializeField] private TextMeshProUGUI totalHayCountText;
+    [SerializeField] private TextMeshProUGUI totalFlourCountText;
+    [SerializeField] private TextMeshProUGUI totalBreadCountText;
 
-    [Inject]
-    public void Construct(ResourceCollector resourceCollector)
+    private void Start()
     {
-        _resourceCollector = resourceCollector;
-
-        TotalHayCount.Subscribe(count => _resourceCollector.SetTotalText(ResourceType.Hay, count)).AddTo(this);
-        TotalFlourCount.Subscribe(count => _resourceCollector.SetTotalText(ResourceType.Flour, count)).AddTo(this);
-        TotalBreadCount.Subscribe(count => _resourceCollector.SetTotalText(ResourceType.BreadV1, count)).AddTo(this);
-        TotalBreadCount.Subscribe(count => _resourceCollector.SetTotalText(ResourceType.BreadV2, count)).AddTo(this);
+        Debug.Log("  //buraya da bak !!! burada resourcetype'lara el atalým");
+        Debug.Log(" bread v2 yi kaldýralým");
+        TotalHayCount.Subscribe(count => SetTotalText(ResourceType.Hay, count)).AddTo(this);
+        TotalFlourCount.Subscribe(count => SetTotalText(ResourceType.Flour, count)).AddTo(this);
+        TotalBreadCount.Subscribe(count => SetTotalText(ResourceType.BreadV1, count)).AddTo(this);
+        TotalBreadCount.Subscribe(count => SetTotalText(ResourceType.BreadV2, count)).AddTo(this);
     }
-   
+    public void SetTotalText(ResourceType resourceType, int count)
+    {
+        if (resourceType == ResourceType.Hay)
+            totalHayCountText.text = count.ToString();
+        else if (resourceType == ResourceType.Flour)
+            totalFlourCountText.text = count.ToString();
+        else if (resourceType == ResourceType.BreadV1)//altla ayný
+            totalBreadCountText.text = count.ToString();
+        else if (resourceType == ResourceType.BreadV2)
+            totalBreadCountText.text = count.ToString();
+    }
     public int GetTotalResourceCount(ResourceType resourceType)
     {
         switch (resourceType)
@@ -46,7 +58,7 @@ public class ResourceManager : MonoBehaviour
             ResourceType.Hay => TotalHayCount,
             ResourceType.Flour => TotalFlourCount,
             ResourceType.BreadV1 => TotalBreadCount,
-            ResourceType.BreadV2 => TotalBreadCount,
+           ResourceType.BreadV2 => TotalBreadCount,
             _ => Observable.Return(0)
         };
     }
@@ -101,7 +113,7 @@ public class ResourceManager : MonoBehaviour
                 {
                     TotalBreadCount.Value -= quantity;
                     return true;
-                }
+               }
                 break;
         }
         return false;

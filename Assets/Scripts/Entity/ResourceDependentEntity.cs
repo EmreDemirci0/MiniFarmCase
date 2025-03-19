@@ -10,6 +10,7 @@ public abstract class ResourceDependentEntity : EntityBase
     protected DependentResource _resourceDependentBase;
     protected ResourceManager _resourceManager;
 
+    [Header("Production Buttons")]
     [SerializeField] protected SCResources requireResource;
     [SerializeField] protected int resourceQuantity;
     [SerializeField] protected TextMeshProUGUI productionOrderText;
