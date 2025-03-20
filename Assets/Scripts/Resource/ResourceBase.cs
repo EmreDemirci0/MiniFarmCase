@@ -5,59 +5,55 @@ using System.Linq;
 
 public abstract class ResourceBase 
 {
+    public ResourceType ResourceType;
     protected ResourceManager _resourceManager;
-    protected ResourceCollector _resourceCollector;
-    protected ResourceType _resourceType;
+    protected ResourceCollector _resourceCollector;   
 
-    private int maxCapacity = 5; // Fabrikanýn kapasitesi
-    public int MaxCapacity => maxCapacity;
+    private int _maxCapacity = 5; // Fabrikanýn kapasitesi
+    public int MaxCapacity => _maxCapacity;
 
-    private int productionTime = 150; // Üretim süresi (saniye)
-    public int ProductionTime => productionTime;
+
+    private int _productionTime = 150; // Üretim süresi (saniye)
+    public int ProductionTime => _productionTime;
 
    
-
-    private bool isProducing = false;
-    public bool IsProducing => isProducing;
+    private bool _isProducing = false;
+    public bool IsProducing => _isProducing;
     
 
-    private IntReactiveProperty storedResources = new IntReactiveProperty(0);
-    public IReadOnlyReactiveProperty<int> StoredResources => storedResources;
+    private IntReactiveProperty _storedResources = new IntReactiveProperty(0);
+    public IReadOnlyReactiveProperty<int> StoredResources => _storedResources;
     
 
     protected ResourceBase(ResourceManager resourceManager,ResourceCollector resourceCollector)
     {
         _resourceManager = resourceManager;
         _resourceCollector = resourceCollector;
-        //this.resourceType = _entityBase.resourceInfo.resourceType;
-
-        
-        //SetStoredResources(StoredResources.Value);
     }
 
     protected void SetIsProducing(bool active) //setter
     {
-        isProducing = active;
+        _isProducing = active;
     }
     protected void SetStoredResources(int value) //setter
     {
-        storedResources.Value = value;
+        _storedResources.Value = value;
         //_resourceCollector.SetResourceCapacityText(_resourceType,StoredResources.Value);
     }
     public void SetProductionValues(int productionTime, int maxCapacity)
     {
-        this.productionTime = productionTime;
-        this.maxCapacity = maxCapacity;
+        this._productionTime = productionTime;
+        this._maxCapacity = maxCapacity;
     }
     public abstract UniTask Produce(); 
     public abstract UniTask<int> CollectResources();
     public abstract void SetSubscribes();
     public void SetResourceImage()
     {
-        var reso = _resourceManager.reso.FirstOrDefault(r => r.resourceType == _resourceType);
-        if (reso != null)
+        var resources = _resourceManager.allResources.FirstOrDefault(r => r.resourceType == ResourceType);
+        if (resources != null)
         {
-            _resourceCollector.SetResourceImage(_resourceType, reso.resourceSprite);
+            _resourceCollector.SetResourceImage(ResourceType, resources.resourceSprite);
         }
     }
 }

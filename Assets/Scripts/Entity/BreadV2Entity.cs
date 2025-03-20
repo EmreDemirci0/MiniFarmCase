@@ -1,14 +1,8 @@
-
-using UnityEngine;
-using Zenject;
-
-public class BreadV2Entity : ResourceDependentEntity
+public class BreadV2Entity : ResourceDependentEntityGeneric<BreadV2Resource>
 {
-    [Inject]
-    public void Construct(BreadV2Resource breadV2Resource)
+    protected override ResourceType GetResourceType()
     {
-        _resourceDependentBase = breadV2Resource;
-        _resourceDependentBase.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);
-        SetQueueSubscribes();
+        return ResourceType.BreadV2;
     }
+
 }

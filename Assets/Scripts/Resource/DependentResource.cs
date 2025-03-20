@@ -10,12 +10,10 @@ public class DependentResource : ResourceBase
     public DependentResource(ResourceManager resourceManager, ResourceCollector resourceCollector)
          : base(resourceManager, resourceCollector)
     {
-        //StoredResources.Subscribe(_ => SetSliderActive());
-        //QueueCount.Subscribe(_ => SetSliderActive());
     }
     public override void SetSubscribes()
     {
-        StoredResources.Subscribe(stored => _resourceCollector.SetResourceCapacityText(_resourceType, stored));
+        StoredResources.Subscribe(stored => _resourceCollector.SetResourceCapacityText(ResourceType, stored));
         StoredResources.Subscribe(_ => SetSliderActive());
         QueueCount.Subscribe(_ => SetSliderActive());
         SetResourceImage();
@@ -58,7 +56,7 @@ public class DependentResource : ResourceBase
         int collected = StoredResources.Value;
         SetStoredResources(0);
 
-        _resourceManager.AddResource(_resourceType, collected);
+        _resourceManager.AddResource(ResourceType, collected);
 
         if (!IsProducing)
         {
@@ -104,12 +102,8 @@ public class DependentResource : ResourceBase
             {
                 float targetValue = (float)remainingTime / ProductionTime;
 
-                //_entityBase.SetProductionTimerText(remainingTime + "s");
-                //_entityBase.SetSliderValue(targetValue);
-                _resourceCollector.SetProductionTimerText(_resourceType, remainingTime + "s");
-                _resourceCollector.SetSliderValue(_resourceType, targetValue);
-                //_resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
-                //_resourceCollector.SetSlider(resourceType, targetValue);
+                _resourceCollector.SetProductionTimerText(ResourceType, remainingTime + "s");
+                _resourceCollector.SetSliderValue(ResourceType, targetValue);
 
                 await UniTask.WhenAny(
                       UniTask.Delay(1000),
@@ -119,21 +113,16 @@ public class DependentResource : ResourceBase
                 if (!IsProducing)
                 {
                    
-                    _resourceCollector.SetSliderValue(_resourceType, 1);
-                    //_entityBase.SetSliderValue(1);
-                    //_resourceCollector.SetSlider(resourceType, 1f);
+                    _resourceCollector.SetSliderValue(ResourceType, 1);
+
                     if (StoredResources.Value >= MaxCapacity)
                     { 
-                        _resourceCollector.SetProductionTimerText(_resourceType, "FULL");
-                    //_entityBase.SetProductionTimerText("FULL");
-
+                        _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
                     }
                     else
                     { 
-                        _resourceCollector.SetProductionTimerText(_resourceType, "FINISH");
-                   // _entityBase.SetProductionTimerText("FINISH");
+                        _resourceCollector.SetProductionTimerText(ResourceType, "FINISH");
                     }
-
                     return;
                 }
                 remainingTime--;
@@ -141,12 +130,10 @@ public class DependentResource : ResourceBase
             }
         }
     }
-
     public void IncreaseQueueCount()
     {
         _queueCount.Value++;
     }
-
     public void DecreaseQueueCount()
     {
         if (_queueCount.Value > 0)
@@ -157,7 +144,6 @@ public class DependentResource : ResourceBase
     protected void SetSliderActive()
     {
         bool active = !(!IsProducing && StoredResources.Value <= 0 && QueueCount.Value <= 0);
-        _resourceCollector.UpdateSliderSetActive(_resourceType, active);
-        Debug.LogError("2SETSLÝDERACTÝVE:" + _resourceType + active);
+        _resourceCollector.UpdateSliderSetActive(ResourceType, active);
     }
 }

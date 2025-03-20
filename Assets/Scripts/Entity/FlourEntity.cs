@@ -1,11 +1,7 @@
-using Zenject;
-public class FlourEntity : ResourceDependentEntity 
+public class FlourEntity : ResourceDependentEntityGeneric<FlourResource>
 {
-    [Inject]
-    public void Construct(FlourResource flourResource)
+    protected override ResourceType GetResourceType()
     {
-        _resourceDependentBase = flourResource;
-        _resourceDependentBase.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);
-        SetQueueSubscribes();
+        return ResourceType.Flour;
     }
 }

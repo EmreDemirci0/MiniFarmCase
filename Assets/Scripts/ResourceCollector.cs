@@ -12,7 +12,7 @@ public class ResourceCollector : MonoBehaviour
 {
 
     private Camera _camera;
-    private List<ResourceDependentEntity> _resources = new List<ResourceDependentEntity>();
+    private HashSet<ResourceDependentEntity> _resources = new HashSet<ResourceDependentEntity>();
     private ResourceDependentEntity currentOpenResource;
 
     [SerializeField] private TextMeshProUGUI totalHayCountText;
@@ -48,7 +48,7 @@ public class ResourceCollector : MonoBehaviour
             RaycastHit hit;
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
             if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) return;
-            //burayý refactor !!!
+
             if (Physics.Raycast(ray, out hit))
             {
                 IEntity entity = hit.collider.GetComponent<IEntity>();
@@ -89,76 +89,110 @@ public class ResourceCollector : MonoBehaviour
         }
     }
 
-    public void SetTotalText(ResourceType resourceType, int count)
+    public void SetSliderValue(ResourceType type, float value)
     {
-        if (resourceType == ResourceType.Hay)
-            totalHayCountText.text = count.ToString();
-        else if (resourceType == ResourceType.Flour)
-            totalFlourCountText.text = count.ToString();
-        else if (resourceType == ResourceType.BreadV1)//altla ayný
-            totalBreadCountText.text = count.ToString();
-        else if (resourceType == ResourceType.BreadV2)
-            totalBreadCountText.text = count.ToString();
+        switch (type)
+        {
+            case ResourceType.Hay:
+                hayFactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
+                break;
+            case ResourceType.Flour:
+                flourFactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
+                break;
+            case ResourceType.BreadV1:
+                breadV1FactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
+                break;
+            case ResourceType.BreadV2:
+                breadV2FactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
+                break;
+            default:
+                Debug.LogWarning("Unknown ResourceType");
+                break;
+        }
     }
-    public void SetSliderValue(ResourceType type,float value)
+    public void SetProductionTimerText(ResourceType type, string text)
     {
-        if (type==ResourceType.Hay)
-            hayFactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
-        else if (type == ResourceType.Flour)
-            flourFactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
-        else if (type == ResourceType.BreadV1)
-            breadV1FactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
-        else if (type == ResourceType.BreadV2)
-            breadV2FactoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
-        //factoryResourceSlider.DOValue(value, 1f).SetEase(Ease.Linear);
+        switch (type)
+        {
+            case ResourceType.Hay:
+                hayProductionTimerText.text = text;
+                break;
+            case ResourceType.Flour:
+                flourProductionTimerText.text = text;
+                break;
+            case ResourceType.BreadV1:
+                breadV1ProductionTimerText.text = text;
+                break;
+            case ResourceType.BreadV2:
+                breadV2ProductionTimerText.text = text;
+                break;
+            default:
+                Debug.LogWarning("Unknown ResourceType");
+                break;
+        }
     }
-    public void SetProductionTimerText(ResourceType type,string text)
+    public void SetResourceCapacityText(ResourceType type, int stored)
     {
-        if (type == ResourceType.Hay)
-            hayProductionTimerText.text = text;
-        else if (type == ResourceType.Flour)
-            flourProductionTimerText.text = text;
-        else if (type == ResourceType.BreadV1)
-            breadV1ProductionTimerText.text = text;
-        else if (type == ResourceType.BreadV2)
-            breadV2ProductionTimerText.text = text;
-        //productionTimerText.text = text;
-    }
-    public void SetResourceCapacityText(ResourceType type,int stored)
-    {
-        if (type == ResourceType.Hay)
-            hayResourceCapacityText.text = stored.ToString();
-        else if (type == ResourceType.Flour)
-            flourResourceCapacityText.text = stored.ToString();
-        else if (type == ResourceType.BreadV1)
-            breadV1ResourceCapacityText.text = stored.ToString();
-        else if (type == ResourceType.BreadV2)
-            breadV2ResourceCapacityText.text = stored.ToString();
-        //resourceCapacityText.text = stored.ToString();
+        switch (type)
+        {
+            case ResourceType.Hay:
+                hayResourceCapacityText.text = stored.ToString();
+                break;
+            case ResourceType.Flour:
+                flourResourceCapacityText.text = stored.ToString();
+                break;
+            case ResourceType.BreadV1:
+                breadV1ResourceCapacityText.text = stored.ToString();
+                break;
+            case ResourceType.BreadV2:
+                breadV2ResourceCapacityText.text = stored.ToString();
+                break;
+            default:
+                Debug.LogWarning("Unknown ResourceType");
+                break;
+        }
     }
     public void SetResourceImage(ResourceType type, Sprite sprite)
     {
-        if (type == ResourceType.Hay)
-            hayFactoryResourceImage.sprite= sprite;
-        else if (type == ResourceType.Flour)
-            flourFactoryResourceImage.sprite = sprite;
-        else if (type == ResourceType.BreadV1)
-            breadV1FactoryResourceImage.sprite = sprite;
-        else if (type == ResourceType.BreadV2)
-            breadV2FactoryResourceImage.sprite = sprite;
-        //resourceCapacityText.text = stored.ToString();
+        switch (type)
+        {
+            case ResourceType.Hay:
+                hayFactoryResourceImage.sprite = sprite;
+                break;
+            case ResourceType.Flour:
+                flourFactoryResourceImage.sprite = sprite;
+                break;
+            case ResourceType.BreadV1:
+                breadV1FactoryResourceImage.sprite = sprite;
+                break;
+            case ResourceType.BreadV2:
+                breadV2FactoryResourceImage.sprite = sprite;
+                break;
+            default:
+                Debug.LogWarning("Unknown ResourceType");
+                break;
+        }
     }
-    public void UpdateSliderSetActive(ResourceType type,bool active)
+
+    public void UpdateSliderSetActive(ResourceType type, bool active)
     {
-        Debug.LogError("SETSLÝDERACTÝVE:"+type+active);
-        if (type == ResourceType.Hay)
-            hayFactoryResourceSlider.gameObject.SetActive(active);
-        else if (type == ResourceType.Flour)
-            flourFactoryResourceSlider.gameObject.SetActive(active);
-        else if (type == ResourceType.BreadV1)
-            breadV1FactoryResourceSlider.gameObject.SetActive(active);
-        else if (type == ResourceType.BreadV2)
-            breadV2FactoryResourceSlider.gameObject.SetActive(active);
-        //factoryResourceSlider.gameObject.SetActive(active);
+        switch (type)
+        {
+            case ResourceType.Hay:
+                hayFactoryResourceSlider.gameObject.SetActive(active);
+                break;
+            case ResourceType.Flour:
+                flourFactoryResourceSlider.gameObject.SetActive(active);
+                break;
+            case ResourceType.BreadV1:
+                breadV1FactoryResourceSlider.gameObject.SetActive(active);
+                break;
+            case ResourceType.BreadV2:
+                breadV2FactoryResourceSlider.gameObject.SetActive(active);
+                break;
+            default:
+                Debug.LogWarning("Unknown ResourceType");
+                break;
+        }
     }
 }

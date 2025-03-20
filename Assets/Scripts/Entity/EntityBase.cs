@@ -4,7 +4,6 @@ using System.Resources;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Zenject;
 public abstract class EntityBase : MonoBehaviour,IEntity
 {
     public SCResources resourceInfo;
@@ -14,9 +13,10 @@ public abstract class EntityBase : MonoBehaviour,IEntity
     //[SerializeField] private Image factoryResourceImage;
     //[SerializeField] private TextMeshProUGUI resourceCapacityText;
     //[SerializeField] private TextMeshProUGUI productionTimerText;
-    
-   
+
     public abstract UniTaskVoid Interact();
+    protected abstract ResourceType GetResourceType();
+
 
     //public void SetSliderValue(float value)
     //{
