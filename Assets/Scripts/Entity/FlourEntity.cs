@@ -5,7 +5,7 @@ public class FlourEntity : ResourceDependentEntity
     public void Construct(FlourResource flourResource)
     {
         _resourceDependentBase = flourResource;
-        _resourceDependentBase.SetProductionValues(productionTime, maxCapacity);
+        _resourceDependentBase.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);
         SetQueueSubscribes();
     }
 }

@@ -8,6 +8,6 @@ public class HayEntity : NonResourceEntity
     {
         _resourceNon = hayResource;
 
-        _resourceNon.SetProductionValues(productionTime, maxCapacity);   
+        _resourceNon.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);   
     }    
 }

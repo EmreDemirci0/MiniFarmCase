@@ -1,13 +1,15 @@
 using Cysharp.Threading.Tasks;
+using System.Linq;
 using UniRx;
+using UnityEngine;
 using Zenject; 
 public abstract class NonResource : ResourceBase
 {
     
     [Inject]
-    public NonResource(ResourceManager resourceManager , EntityBase entityBase)
-         : base(resourceManager, entityBase)
-    {
+    public NonResource(ResourceManager resourceManager , ResourceCollector resourceCollector)
+         : base(resourceManager, resourceCollector)
+    { 
      
         var delay = UniTask.DelayFrame(1).ContinueWith(() => 
          {
@@ -17,7 +19,11 @@ public abstract class NonResource : ResourceBase
              );
          });
     }
-
+    public override void SetSubscribes()
+    {
+        StoredResources.Subscribe(stored => _resourceCollector.SetResourceCapacityText(_resourceType, stored));
+        SetResourceImage();
+    }
     public override async UniTask Produce()
     {
         if (IsProducing)
@@ -49,7 +55,7 @@ public abstract class NonResource : ResourceBase
 
         int collected = StoredResources.Value;
         SetStoredResources(0);
-        _resourceManager.AddResource(resourceType, collected);
+        _resourceManager.AddResource(_resourceType, collected);
 
         if (!IsProducing)
         {
@@ -66,8 +72,10 @@ public abstract class NonResource : ResourceBase
 
             if (StoredResources.Value >= MaxCapacity)
             {
-                _entityBase.SetProductionTimerText("FULL");
-                _entityBase.SetSliderValue(1);
+                _resourceCollector.SetProductionTimerText(_resourceType,"FULL");
+                _resourceCollector.SetSliderValue(_resourceType,1);
+                //_entityBase.SetProductionTimerText("FULL");
+                //_entityBase.SetSliderValue(1);
             }
             else
             {
@@ -75,10 +83,11 @@ public abstract class NonResource : ResourceBase
 
                 while (remainingTime > 0)
                 {
-                    _entityBase.SetProductionTimerText(remainingTime + "s");
+                    //_entityBase.SetProductionTimerText(remainingTime + "s");
                     float targetValue = (float)remainingTime / ProductionTime;
-
-                    _entityBase.SetSliderValue(targetValue);
+                    _resourceCollector.SetProductionTimerText(_resourceType, remainingTime + "s");
+                    _resourceCollector.SetSliderValue(_resourceType, targetValue);
+                    //_entityBase.SetSliderValue(targetValue);
 
 
                     await UniTask.Delay(1000);

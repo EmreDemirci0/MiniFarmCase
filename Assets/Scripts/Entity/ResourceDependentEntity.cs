@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using Zenject;
 using UniRx;
 using Cysharp.Threading.Tasks;
+using Zenject.ReflectionBaking.Mono.Cecil;
 
 public abstract class ResourceDependentEntity : EntityBase
 {
@@ -11,8 +12,7 @@ public abstract class ResourceDependentEntity : EntityBase
     protected ResourceManager _resourceManager;
 
     [Header("Production Buttons")]
-    [SerializeField] protected SCResources requireResource;
-    [SerializeField] protected int resourceQuantity;
+    [SerializeField] protected SCRequireResources _requireResource;
     [SerializeField] protected TextMeshProUGUI productionOrderText;
     [SerializeField] protected GameObject productionButtonsParent;
     [SerializeField] protected Button plusProductionOrderButton;
@@ -24,20 +24,27 @@ public abstract class ResourceDependentEntity : EntityBase
     [Inject]
     public void ConstructBase(ResourceManager resourceManager)
     {
+       
         _resourceManager = resourceManager;
+        if (resourceProductionImage==null)
+        {
+            Debug.Log("EEEEEEEEEEEEE");
+        }
+        resourceProductionImage.sprite = _requireResource.RequireResourceSprite;
+        resourceProductionQuantityText.text = "x" + _requireResource.RequireQuantity.ToString();
 
-        resourceProductionImage.sprite = requireResource.resourceSprite;
-        resourceProductionQuantityText.text = "x" + resourceQuantity.ToString();
-
+        //Debug.LogError("CONSTRUCT BASE CALISIYPOR" + this.gameObject.name);
         plusProductionOrderButton.onClick.AddListener(ProductionPlusButtonClicked);
         minusProductionOrderButton.onClick.AddListener(ProductionMinusButtonClicked);
 
-        _resourceManager.GetTotalResourceObservable(requireResource.resourceType)
+        _resourceManager.GetTotalResourceObservable(_requireResource.RequireResourceType)
             .Subscribe(_ => PlusMinusButtonInteractivity())
             .AddTo(this);
+
+
     }
 
-
+    
     public async override UniTaskVoid Interact()
     {
         if (!isProductionButtonOpen)
@@ -55,11 +62,12 @@ public abstract class ResourceDependentEntity : EntityBase
     }
     public async void ProductionPlusButtonClicked()
     {
-        await _resourceDependentBase.AddToQueue(requireResource.resourceType, resourceQuantity);
+        Debug.Log("SIRAYA ALDIK");
+        await _resourceDependentBase.AddToQueue(_requireResource.RequireResourceType, _requireResource.RequireQuantity);
     }
     public void ProductionMinusButtonClicked()
     {
-        _resourceDependentBase.RemoveFromQueue(requireResource.resourceType, resourceQuantity);
+        _resourceDependentBase.RemoveFromQueue(_requireResource.RequireResourceType, _requireResource.RequireQuantity);
     }
 
     public void PlusMinusButtonInteractivity()
@@ -67,9 +75,9 @@ public abstract class ResourceDependentEntity : EntityBase
         if (_resourceDependentBase == null || _resourceManager == null)
             return;
 
-        int currentResourceCount = _resourceManager.GetTotalResourceCount(requireResource.resourceType);
+        int currentResourceCount = _resourceManager.GetTotalResourceCount(_requireResource.RequireResourceType);
 
-        plusProductionOrderButton.interactable = currentResourceCount >= resourceQuantity && _resourceDependentBase.QueueCount.Value < maxCapacity;
+        plusProductionOrderButton.interactable = currentResourceCount >= _requireResource.RequireQuantity && _resourceDependentBase.QueueCount.Value < resourceInfo.maxCapacity;
         minusProductionOrderButton.interactable = _resourceDependentBase.QueueCount.Value > 1;
     }
 
@@ -85,10 +93,11 @@ public abstract class ResourceDependentEntity : EntityBase
     {
         _resourceDependentBase.QueueCount.Subscribe(_ => PlusMinusButtonInteractivity()).AddTo(this);
         _resourceDependentBase.QueueCount.Subscribe(count => SetProductionOrderText(count)).AddTo(this);
-
+        
     }
     protected void SetProductionOrderText(int count)
     {
-        productionOrderText.text = $"{count}/{maxCapacity}";
+        //Debug.LogError("SetProductionOrderText:"+this.gameObject.name);
+        productionOrderText.text = $"{count}/{resourceInfo.maxCapacity}";
     }
 }

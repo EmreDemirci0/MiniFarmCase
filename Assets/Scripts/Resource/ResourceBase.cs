@@ -1,12 +1,13 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UniRx;
+using System.Linq;
 
-public abstract class ResourceBase
+public abstract class ResourceBase 
 {
     protected ResourceManager _resourceManager;
-    protected ResourceType resourceType;
-    protected EntityBase _entityBase;
+    protected ResourceCollector _resourceCollector;
+    protected ResourceType _resourceType;
 
     private int maxCapacity = 5; // Fabrikanýn kapasitesi
     public int MaxCapacity => maxCapacity;
@@ -24,14 +25,14 @@ public abstract class ResourceBase
     public IReadOnlyReactiveProperty<int> StoredResources => storedResources;
     
 
-    protected ResourceBase(ResourceManager resourceManager, EntityBase entityBase)
+    protected ResourceBase(ResourceManager resourceManager,ResourceCollector resourceCollector)
     {
         _resourceManager = resourceManager;
-        _entityBase = entityBase;
-        this.resourceType = _entityBase.resourceInfo.resourceType;
+        _resourceCollector = resourceCollector;
+        //this.resourceType = _entityBase.resourceInfo.resourceType;
 
-        StoredResources.Subscribe(stored => _entityBase.SetResourceCapacityText(stored));
-        SetStoredResources(StoredResources.Value);
+        
+        //SetStoredResources(StoredResources.Value);
     }
 
     protected void SetIsProducing(bool active) //setter
@@ -41,7 +42,7 @@ public abstract class ResourceBase
     protected void SetStoredResources(int value) //setter
     {
         storedResources.Value = value;
-        //_entityBase.SetResourceCapacityText(StoredResources.Value);
+        //_resourceCollector.SetResourceCapacityText(_resourceType,StoredResources.Value);
     }
     public void SetProductionValues(int productionTime, int maxCapacity)
     {
@@ -50,4 +51,13 @@ public abstract class ResourceBase
     }
     public abstract UniTask Produce(); 
     public abstract UniTask<int> CollectResources();
+    public abstract void SetSubscribes();
+    public void SetResourceImage()
+    {
+        var reso = _resourceManager.reso.FirstOrDefault(r => r.resourceType == _resourceType);
+        if (reso != null)
+        {
+            _resourceCollector.SetResourceImage(_resourceType, reso.resourceSprite);
+        }
+    }
 }

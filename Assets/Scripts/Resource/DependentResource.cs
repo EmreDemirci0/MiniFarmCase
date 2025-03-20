@@ -1,18 +1,25 @@
 using Cysharp.Threading.Tasks;
 using UniRx;
 using UnityEngine;
+
 public class DependentResource : ResourceBase
 {
     private ReactiveProperty<int> _queueCount = new ReactiveProperty<int>(0);
     public IReadOnlyReactiveProperty<int> QueueCount => _queueCount;
 
-    public DependentResource(ResourceManager resourceManager,  EntityBase entityBase)
-         : base(resourceManager, entityBase)
+    public DependentResource(ResourceManager resourceManager, ResourceCollector resourceCollector)
+         : base(resourceManager, resourceCollector)
     {
+        //StoredResources.Subscribe(_ => SetSliderActive());
+        //QueueCount.Subscribe(_ => SetSliderActive());
+    }
+    public override void SetSubscribes()
+    {
+        StoredResources.Subscribe(stored => _resourceCollector.SetResourceCapacityText(_resourceType, stored));
         StoredResources.Subscribe(_ => SetSliderActive());
         QueueCount.Subscribe(_ => SetSliderActive());
+        SetResourceImage();
     }
-   
     public override async UniTask Produce()
     {
         if (IsProducing || StoredResources.Value >= MaxCapacity)
@@ -51,7 +58,7 @@ public class DependentResource : ResourceBase
         int collected = StoredResources.Value;
         SetStoredResources(0);
 
-        _resourceManager.AddResource(resourceType, collected);
+        _resourceManager.AddResource(_resourceType, collected);
 
         if (!IsProducing)
         {
@@ -97,26 +104,35 @@ public class DependentResource : ResourceBase
             {
                 float targetValue = (float)remainingTime / ProductionTime;
 
-                _entityBase.SetProductionTimerText(remainingTime + "s");
-                _entityBase.SetSliderValue(targetValue);
+                //_entityBase.SetProductionTimerText(remainingTime + "s");
+                //_entityBase.SetSliderValue(targetValue);
+                _resourceCollector.SetProductionTimerText(_resourceType, remainingTime + "s");
+                _resourceCollector.SetSliderValue(_resourceType, targetValue);
                 //_resourceCollector.SetProductionTimerText(resourceType, remainingTime + "s");
                 //_resourceCollector.SetSlider(resourceType, targetValue);
 
                 await UniTask.WhenAny(
                       UniTask.Delay(1000),
-                      UniTask.WaitUntil(() => !IsProducing) 
+                      UniTask.WaitUntil(() => !IsProducing)  
                 );
 
                 if (!IsProducing)
                 {
-                    _entityBase.SetSliderValue(1);
+                   
+                    _resourceCollector.SetSliderValue(_resourceType, 1);
+                    //_entityBase.SetSliderValue(1);
                     //_resourceCollector.SetSlider(resourceType, 1f);
                     if (StoredResources.Value >= MaxCapacity)
-                        //_resourceCollector.SetProductionTimerText(resourceType, "FULL");
-                    _entityBase.SetProductionTimerText("FULL");
+                    { 
+                        _resourceCollector.SetProductionTimerText(_resourceType, "FULL");
+                    //_entityBase.SetProductionTimerText("FULL");
+
+                    }
                     else
-                        //_resourceCollector.SetProductionTimerText(resourceType, "FINISH");
-                    _entityBase.SetProductionTimerText("FINISH");
+                    { 
+                        _resourceCollector.SetProductionTimerText(_resourceType, "FINISH");
+                   // _entityBase.SetProductionTimerText("FINISH");
+                    }
 
                     return;
                 }
@@ -138,10 +154,10 @@ public class DependentResource : ResourceBase
             _queueCount.Value--; 
         }
     }
-    private void SetSliderActive()
+    protected void SetSliderActive()
     {
         bool active = !(!IsProducing && StoredResources.Value <= 0 && QueueCount.Value <= 0);
-        _entityBase.UpdateSliderSetActive(active);
-        
+        _resourceCollector.UpdateSliderSetActive(_resourceType, active);
+        Debug.LogError("2SETSLÝDERACTÝVE:" + _resourceType + active);
     }
 }

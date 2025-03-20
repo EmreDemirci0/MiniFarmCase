@@ -1,8 +1,13 @@
 
+using UniRx;
 public class BreadV2Resource : DependentResource
 {
-    public BreadV2Resource(ResourceManager resourceManager, BreadV2Entity entity)
-        : base(resourceManager, entity)
+    public BreadV2Resource(ResourceManager resourceManager, ResourceCollector resourceCollector)
+        : base(resourceManager, resourceCollector)
     {
+        _resourceType = ResourceType.BreadV2;
+        SetSubscribes();
+
+       
     }
 }

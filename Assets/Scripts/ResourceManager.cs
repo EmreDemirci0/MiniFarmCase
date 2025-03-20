@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UniRx;
 using UnityEngine;
@@ -6,7 +7,7 @@ using Zenject;
 
 public class ResourceManager : MonoBehaviour
 {
-  
+    public List<SCResources> reso;
     public ReactiveProperty<int> TotalHayCount { get; private set; } = new ReactiveProperty<int>(100);
     public ReactiveProperty<int> TotalFlourCount { get; private set; } = new ReactiveProperty<int>(100);
     public ReactiveProperty<int> TotalBreadCount { get; private set; } = new ReactiveProperty<int>(0);
@@ -17,8 +18,8 @@ public class ResourceManager : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("  //buraya da bak !!! burada resourcetype'lara el atalým");
-        Debug.Log(" bread v2 yi kaldýralým");
+        //Debug.Log("  //buraya da bak !!! burada resourcetype'lara el atalým");
+        //Debug.Log(" bread v2 yi kaldýralým");
         TotalHayCount.Subscribe(count => SetTotalText(ResourceType.Hay, count)).AddTo(this);
         TotalFlourCount.Subscribe(count => SetTotalText(ResourceType.Flour, count)).AddTo(this);
         TotalBreadCount.Subscribe(count => SetTotalText(ResourceType.BreadV1, count)).AddTo(this);
@@ -58,7 +59,7 @@ public class ResourceManager : MonoBehaviour
             ResourceType.Hay => TotalHayCount,
             ResourceType.Flour => TotalFlourCount,
             ResourceType.BreadV1 => TotalBreadCount,
-           ResourceType.BreadV2 => TotalBreadCount,
+            ResourceType.BreadV2 => TotalBreadCount,
             _ => Observable.Return(0)
         };
     }
@@ -113,7 +114,7 @@ public class ResourceManager : MonoBehaviour
                 {
                     TotalBreadCount.Value -= quantity;
                     return true;
-               }
+                }
                 break;
         }
         return false;
