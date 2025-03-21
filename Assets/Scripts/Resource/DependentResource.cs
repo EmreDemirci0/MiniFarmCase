@@ -18,32 +18,60 @@ public class DependentResource : ResourceBase
         QueueCount.Subscribe(_ => SetSliderActive());
         SetResourceImage();
     }
-    public override async UniTask Produce()
+
+    //    Set
+    public override async UniTask ProduceWithSlider(float remainingTimes = 0)
     {
+        // Eðer zaten üretim yapýlýyorsa veya depo doluysa, metottan çýk
         if (IsProducing || StoredResources.Value >= MaxCapacity)
         {
             Debug.Log("Üretim yapýlmýyor veya kapasite dolmuþ.");
             return;
         }
 
+        // Üretimi baþlat
         SetIsProducing(true);
 
+        // Üretim sürecini ve slider'ý takip et
         while (_queueCount.Value > 0 && StoredResources.Value < MaxCapacity)
         {
-            for (int i = ProductionTime; i > 0; i--)
-            {
-                await UniTask.Delay(1000);
-            }
-            SetStoredResources(StoredResources.Value+1);//Depoya ekle
-            DecreaseQueueCount();//Queue'den cýkar
+            int remainingTime = ProductionTime;
 
+            // Slider'ý ve geri sayýmý güncelle
+            while (remainingTime > 0)
+            {
+                float targetValue = (float)remainingTime / ProductionTime;
+                _resourceCollector.SetProductionTimerText(ResourceType, remainingTime + "s");
+                _resourceCollector.SetSliderValue(ResourceType, targetValue);
+
+                await UniTask.Delay(1000); // 1 saniye bekle
+                remainingTime--;
+            }
+
+            // Üretim tamamlandý, depoya ekle ve kuyruktan çýkar
+            SetStoredResources(StoredResources.Value + 1);
+            DecreaseQueueCount();
+
+            // Eðer kuyruk boþaldýysa, üretimi durdur
             if (_queueCount.Value <= 0)
             {
                 Debug.Log("Üretim kuyruðu boþaldý, üretim durduruluyor.");
-                SetIsProducing(false);
-                return;
+                break;
             }
         }
+
+        // Üretim tamamlandý, slider'ý ve metni güncelle
+        if (StoredResources.Value >= MaxCapacity)
+        {
+            _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
+        }
+        else
+        {
+            _resourceCollector.SetProductionTimerText(ResourceType, "FINISH");
+        }
+        _resourceCollector.SetSliderValue(ResourceType, 1);
+
+        // Üretimi durdur
         SetIsProducing(false);
     }
     public override async UniTask<int> CollectResources()
@@ -61,8 +89,9 @@ public class DependentResource : ResourceBase
         if (!IsProducing)
         {
             await UniTask.WhenAll(
-            Produce(),
-            SliderTask()
+            //Produce(),
+            //SliderTask()
+            ProduceWithSlider()
             );
         }
         return collected;
@@ -76,8 +105,9 @@ public class DependentResource : ResourceBase
             return;
 
         await UniTask.WhenAll(
-            Produce(),
-            SliderTask()
+            //Produce(),
+            //SliderTask()
+            ProduceWithSlider()
         );
     }
     public void RemoveFromQueue(ResourceType type, int quantity)
@@ -87,49 +117,74 @@ public class DependentResource : ResourceBase
         DecreaseQueueCount();
         _resourceManager.AddResource(type, quantity);
     }
+    //public override async UniTask Produce()
+    //{
+    //    if (IsProducing || StoredResources.Value >= MaxCapacity)
+    //    {
+    //        Debug.Log("Üretim yapýlmýyor veya kapasite dolmuþ.");
+    //        return;
+    //    }
 
-    public async UniTask SliderTask()
-    {
-        if (!IsProducing)
-        {
-            Debug.Log("Üretim baþlamadý, slider duruyor.");
-            return;
-        }
-        while (IsProducing)
-        {
-            int remainingTime = ProductionTime;
-            while (remainingTime > 0 && IsProducing)
-            {
-                float targetValue = (float)remainingTime / ProductionTime;
+    //    SetIsProducing(true);
 
-                _resourceCollector.SetProductionTimerText(ResourceType, remainingTime + "s");
-                _resourceCollector.SetSliderValue(ResourceType, targetValue);
+    //    while (_queueCount.Value > 0 && StoredResources.Value < MaxCapacity)
+    //    {
+    //        for (int i = ProductionTime; i > 0; i--)
+    //        {
+    //            await UniTask.Delay(1000);
+    //        }
+    //        SetStoredResources(StoredResources.Value+1);//Depoya ekle
+    //        DecreaseQueueCount();//Queue'den cýkar
 
-                await UniTask.WhenAny(
-                      UniTask.Delay(1000),
-                      UniTask.WaitUntil(() => !IsProducing)  
-                );
+    //        if (_queueCount.Value <= 0)
+    //        {
+    //            Debug.Log("Üretim kuyruðu boþaldý, üretim durduruluyor.");
+    //            SetIsProducing(false);
+    //            return;
+    //        }
+    //    }
+    //public async UniTask SliderTask()
+    //{
+    //    if (!IsProducing)
+    //    {
+    //        Debug.Log("Üretim baþlamadý, slider duruyor.");
+    //        return;
+    //    }
+    //    while (IsProducing)
+    //    {
+    //        int remainingTime = ProductionTime;
+    //        while (remainingTime > 0 && IsProducing)
+    //        {
+    //            float targetValue = (float)remainingTime / ProductionTime;
 
-                if (!IsProducing)
-                {
+    //            _resourceCollector.SetProductionTimerText(ResourceType, remainingTime + "s");
+    //            _resourceCollector.SetSliderValue(ResourceType, targetValue);
+
+    //            await UniTask.WhenAny(
+    //                  UniTask.Delay(1000),
+    //                  UniTask.WaitUntil(() => !IsProducing)  
+    //            );
+
+    //            if (!IsProducing)
+    //            {
                    
-                    _resourceCollector.SetSliderValue(ResourceType, 1);
+    //                _resourceCollector.SetSliderValue(ResourceType, 1);
 
-                    if (StoredResources.Value >= MaxCapacity)
-                    { 
-                        _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
-                    }
-                    else
-                    { 
-                        _resourceCollector.SetProductionTimerText(ResourceType, "FINISH");
-                    }
-                    return;
-                }
-                remainingTime--;
+    //                if (StoredResources.Value >= MaxCapacity)
+    //                { 
+    //                    _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
+    //                }
+    //                else
+    //                { 
+    //                    _resourceCollector.SetProductionTimerText(ResourceType, "FINISH");
+    //                }
+    //                return;
+    //            }
+    //            remainingTime--;
 
-            }
-        }
-    }
+    //        }
+    //    }
+    //}
     public void IncreaseQueueCount()
     {
         _queueCount.Value++;

@@ -45,7 +45,8 @@ public abstract class ResourceBase
         this._productionTime = productionTime;
         this._maxCapacity = maxCapacity;
     }
-    public abstract UniTask Produce(); 
+    //public abstract UniTask Produce(); 
+    public abstract UniTask ProduceWithSlider(float remainingTime = 0);
     public abstract UniTask<int> CollectResources();
     public abstract void SetSubscribes();
     public void SetResourceImage()
