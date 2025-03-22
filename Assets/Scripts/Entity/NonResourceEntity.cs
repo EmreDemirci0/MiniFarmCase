@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using Zenject;
 
 public abstract class NonResourceEntity<TResource> : EntityBase where TResource : NonResource
@@ -9,6 +10,7 @@ public abstract class NonResourceEntity<TResource> : EntityBase where TResource 
     public void ConstructBase(TResource resource)
     {
         _resourceNon = resource;
+        Debug.Log("Burayý base classa alalým???");
         _resourceNon.ResourceType = GetResourceType();
         _resourceNon.IsSaveable=resourceInfo.isSaveable;
         _resourceNon.SetSubscribes();

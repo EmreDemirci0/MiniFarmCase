@@ -1,10 +1,12 @@
-public static class PlayerPrefsKeys
+public static class ConstantKeys
 {
-    // HayResource için anahtarlar
+
+    public const string ProductionTimeFullText= "FULL";
+    public const string ProductionTimeFinishText= "FULL";
+    //Save
     public const string HayLastSavedTimeKey = "HayLastSavedTime";
     public const string HayStoredResourceKey = "HayStoredResources";
 
-    // DependentResource için anahtarlar
     public const string BreadV1LastSavedTimeKey = "BreadV1LastSavedTime";
     public const string BreadV1StoredResourceKey = "BreadV1StoredResources";
     public const string BreadV1QueueCountKey = "BreadV1QueueCount";

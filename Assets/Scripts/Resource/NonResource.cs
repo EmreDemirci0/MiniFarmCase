@@ -5,41 +5,71 @@ using Unity.VisualScripting;
 using UnityEngine;
 using Zenject;
 public abstract class NonResource : ResourceBase
-{ 
-
-    // Kaydedilen zaman
-    //private const string LastSavedTimeKey = "LastSavedTime";
-    //private const string StoredResourceKey = "StoredResources";
-
+{
 
     [Inject]
     public NonResource(ResourceManager resourceManager, ResourceCollector resourceCollector)
          : base(resourceManager, resourceCollector)
     {
-        var delay = UniTask.DelayFrame(1).ContinueWith(() =>
-        {
-            //IsSaveable = true;
-            if (IsSaveable)
-            {
-                lastSavedTime = LoadSavedTime(PlayerPrefsKeys.HayLastSavedTimeKey);
-                LoadStoredResources(PlayerPrefsKeys.HayStoredResourceKey);//burasý storedkey olmasý gerekmez mi?
-
-                if (lastSavedTime == default)
-                {
-                    Debug.Log("Kaydedilen zaman bulunamadý. Yeni üretim baþlatýlýyor.");
-                    SAVE(PlayerPrefsKeys.HayLastSavedTimeKey,PlayerPrefsKeys.HayStoredResourceKey);
-                }
-            }
-
-
-            var task = UniTask.WhenAll(
-                IsSaveable ? CalculateProductionOnLoad() : ProduceWithSlider(0)
-            );
-        });
+        InitializeAsync().Forget();
 
     }
-    public float curr;
-    public override async UniTask ProduceWithSlider(float remainingTime)
+    public override async UniTaskVoid InitializeAsync()
+    {
+        await UniTask.DelayFrame(1);
+        
+        if (IsSaveable)
+        {
+            _lastSavedTime = LoadSavedTime(_lastSavedTimeKey);
+            LoadStoredResources(_storedResourceKey);
+
+            if (_lastSavedTime == default)
+            {
+                Debug.Log("Kaydedilen zaman bulunamadý. Yeni üretim baþlatýlýyor.");
+                SaveDatas(_lastSavedTimeKey, _storedResourceKey);
+            }
+        }
+
+        await StartProductionAsync();
+    }
+    public override async UniTask StartProductionAsync()
+    {
+        if (IsSaveable)
+        {
+            await CalculateProductionOnLoad();
+        }
+        else
+        {
+            await ProduceWithSlider();
+        }
+    }
+    public override async UniTask CalculateProductionOnLoad()
+    {
+        if (_lastSavedTime != default)
+        {
+            TimeSpan timeDifference = DateTime.Now - _lastSavedTime;
+
+            int producedResources = (int)(timeDifference.TotalSeconds / ProductionTime);
+            var remainingResources = (timeDifference.TotalSeconds % ProductionTime);
+
+            int newStoredResources = Mathf.Min(MaxCapacity, StoredResources.Value + producedResources);
+            SetStoredResources(newStoredResources);
+
+            if (newStoredResources < MaxCapacity)
+            {
+
+                double remainingTime = ProductionTime - remainingResources;
+                _resourceCollector.SetSliderValue(ResourceType, (float)(remainingTime / ProductionTime));
+                await ProduceWithSlider((float)(remainingTime)); // Üretimi kaldýgý yerden devam ettir
+            }
+            else
+            {
+                _resourceCollector.SetSliderValue(ResourceType, 1);
+                _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
+            }
+        }
+    }
+    public override async UniTask ProduceWithSlider(float remainingTime = 0)
     {
         // Eðer zaten üretim yapýlýyorsa veya depo doluysa, metottan çýk
         if (IsProducing || StoredResources.Value >= MaxCapacity)
@@ -48,82 +78,65 @@ public abstract class NonResource : ResourceBase
             return;
         }
 
-        // Üretimi baþlat
         SetIsProducing(true);
 
-        // Üretim sürecini ve slider'ý takip et
         while (StoredResources.Value < MaxCapacity)
         {
             float currentRemainingTime = remainingTime > 0 ? remainingTime : ProductionTime;
             remainingTime = 0;
-
-            // Slider'ý ve geri sayýmý güncelle
             while (currentRemainingTime > 0)
             {
                 float targetValue = (float)(currentRemainingTime / ProductionTime);
                 _resourceCollector.SetProductionTimerText(ResourceType, Mathf.RoundToInt(currentRemainingTime) + "s");
-                //Debug.LogError("TARGETVALUE:" + targetValue + " currentRemainingTime:" + currentRemainingTime);
-                curr = currentRemainingTime;
                 _resourceCollector.SetSliderValue(ResourceType, targetValue);
 
-                await UniTask.Delay(1000); // 1 saniye bekle
+                currentRemainingTimeForSave = currentRemainingTime;
+
+                await UniTask.Delay(1000);
                 currentRemainingTime--;
             }
 
-            // Üretim tamamlandý, depoya ekle
-            SetStoredResources(StoredResources.Value + 1);
+            SetStoredResources(StoredResources.Value + 1);//Depoya ekle
+
             if (IsSaveable)
             {
-                SAVE(PlayerPrefsKeys.HayLastSavedTimeKey, PlayerPrefsKeys.HayStoredResourceKey);
+                SaveDatas(_lastSavedTimeKey, _storedResourceKey);
             }
-            //    Debug.Log("Depoya 1 " + ResourceType + " eklendi.");
         }
 
-        // Üretim tamamlandý, slider'ý ve metni güncelle
-        _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
+        _resourceCollector.SetProductionTimerText(ResourceType, ConstantKeys.ProductionTimeFullText);
         _resourceCollector.SetSliderValue(ResourceType, 1);
 
-        // Üretimi durdur
-        SetIsProducing(false);
         if (IsSaveable)
         {
-            SAVE(PlayerPrefsKeys.HayLastSavedTimeKey, PlayerPrefsKeys.HayStoredResourceKey);
+            SaveDatas(_lastSavedTimeKey, _storedResourceKey);
         }
 
-    }
+        SetIsProducing(false);
 
-    public override void SetSubscribes()
-    {
-        StoredResources.Subscribe(stored => _resourceCollector.SetResourceCapacityText(ResourceType, stored));
-        SetResourceImage();
     }
     public override async UniTask<int> CollectResources()
     {
-        if (StoredResources.Value == 0)
-        {
-            return 0;
-        }
+        if (StoredResources.Value == 0) return 0;
 
         int collected = StoredResources.Value;
-        SetStoredResources(0);
+
+        SetStoredResources(0); //toplandýðý için sýfýrla
+
         _resourceManager.AddResource(ResourceType, collected);
+
         if (IsSaveable)
         {
-            SAVE(PlayerPrefsKeys.HayLastSavedTimeKey, PlayerPrefsKeys.HayStoredResourceKey,curr);
+            SaveDatas(_lastSavedTimeKey, _storedResourceKey, currentRemainingTimeForSave);
         }
 
         if (!IsProducing)
         {
-            await ProduceWithSlider(0);
+            await ProduceWithSlider();
         }
 
         return collected;
     }
 
-
     
-
-
-
-
 }

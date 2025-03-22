@@ -17,6 +17,7 @@ public abstract class ResourceDependentEntityGeneric<TResource> : ResourceDepend
 
 
         _resourceDependentBase = resource;
+        Debug.Log("Burayý base classa alalým???");
         _resourceDependentBase.ResourceType = GetResourceType();
         _resourceDependentBase.IsSaveable = resourceInfo.isSaveable;
         _resourceDependentBase.SetSubscribes();
@@ -82,9 +83,5 @@ public abstract class ResourceDependentEntityGeneric<TResource> : ResourceDepend
         _resourceDependentBase.QueueCount.Subscribe(_ => PlusMinusButtonInteractivity()).AddTo(this);
         _resourceDependentBase.QueueCount.Subscribe(count => SetProductionOrderText(count)).AddTo(this);       
     }
-    protected void SetProductionOrderText(int count)
-    {
-        //Debug.LogError("SetProductionOrderText:"+this.gameObject.name);
-        _productionOrderText.text = $"{count}/{resourceInfo.maxCapacity}";
-    }
+    
 }

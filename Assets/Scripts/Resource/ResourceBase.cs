@@ -6,8 +6,9 @@ using System;
 
 public abstract class ResourceBase 
 {
-    protected DateTime lastSavedTime;
-
+    protected DateTime _lastSavedTime;
+    protected string _lastSavedTimeKey;
+    protected string _storedResourceKey;
 
     public ResourceType ResourceType;
     protected ResourceManager _resourceManager;
@@ -29,6 +30,7 @@ public abstract class ResourceBase
     public IReadOnlyReactiveProperty<int> StoredResources => _storedResources;
 
     public bool IsSaveable;
+    protected float currentRemainingTimeForSave;
     protected ResourceBase(ResourceManager resourceManager,ResourceCollector resourceCollector)
     {
         _resourceManager = resourceManager;
@@ -52,7 +54,11 @@ public abstract class ResourceBase
     //public abstract UniTask Produce(); 
     public abstract UniTask ProduceWithSlider(float remainingTime = 0);
     public abstract UniTask<int> CollectResources();
-    public abstract void SetSubscribes();
+    public virtual void SetSubscribes()
+    {
+        StoredResources.Subscribe(stored => _resourceCollector.SetResourceCapacityText(ResourceType, stored));
+        SetResourceImage();
+    }
     public void SetResourceImage()
     {
         var resources = _resourceManager.allResources.FirstOrDefault(r => r.resourceType == ResourceType);
@@ -62,41 +68,15 @@ public abstract class ResourceBase
         }
     }
 
-    //Save
-    protected virtual async UniTask CalculateProductionOnLoad()//Eðer kayýtlý bir zaman var ise, kaldýgý yerden devam ettirir
+   
+    //Save 
+    public abstract UniTask CalculateProductionOnLoad();
+    public abstract UniTaskVoid InitializeAsync();
+    public abstract UniTask StartProductionAsync();
+
+    protected virtual void SaveDatas(string lastSavedKey, string storedKey, float curr = 0)
     {
-        if (lastSavedTime != default)
-        {
-            TimeSpan timeDifference = DateTime.Now - lastSavedTime;
-
-
-            int producedResources = (int)(timeDifference.TotalSeconds / ProductionTime);
-            var remainingResources = (timeDifference.TotalSeconds % ProductionTime);
-
-
-
-            int newStoredResources = Mathf.Min(MaxCapacity, StoredResources.Value + producedResources);
-            SetStoredResources(newStoredResources);
-
-            if (newStoredResources < MaxCapacity)
-            {
-
-                double remainingTime = ProductionTime - remainingResources;
-                _resourceCollector.SetSliderValue(ResourceType, (float)(remainingTime / ProductionTime));
-                await ProduceWithSlider((float)(remainingTime)); // Üretimi kaldýgý yerden devam ettir
-            }
-            else
-            {
-                _resourceCollector.SetSliderValue(ResourceType, 1); // Depo dolu, slider tam dolu
-                _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
-            }
-        }
-    }
-    protected virtual void SAVE(string lastSavedKey,string storedKey,float curr = 0)
-    {
-        
-        //Debug.Log("SAVED");
-        SaveCurrentTime(lastSavedKey , curr);
+        SaveCurrentTime(lastSavedKey, curr);
         SaveStoredResources(storedKey);
     }
     protected virtual DateTime LoadSavedTime(string lastSavedKey)
@@ -113,18 +93,17 @@ public abstract class ResourceBase
         int storedResources = PlayerPrefsHelper.LoadInt(storedKey);
         SetStoredResources(storedResources); // Depo durumunu yükle
     }
-    protected virtual void SaveCurrentTime(string lastSavedKey,float curr)
+    protected virtual void SaveCurrentTime(string lastSavedKey, float curr)
     {
         if (curr > 0)
         {
-            lastSavedTime = DateTime.Now - TimeSpan.FromSeconds(ProductionTime - curr);
+            _lastSavedTime = DateTime.Now - TimeSpan.FromSeconds(ProductionTime - curr);
         }
         else
         {
-            lastSavedTime = DateTime.Now; // curr deðeri yoksa þu anki zamaný kaydet
+            _lastSavedTime = DateTime.Now; // curr deðeri yoksa þu anki zamaný kaydet
         }
-        PlayerPrefsHelper.SaveDateTime(lastSavedKey, lastSavedTime);
+        PlayerPrefsHelper.SaveDateTime(lastSavedKey, _lastSavedTime);
         //Debug.Log("Zaman kaydedildi: " + lastSavedTime);
     }
-    
 }

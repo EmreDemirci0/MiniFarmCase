@@ -18,6 +18,11 @@ public abstract class ResourceDependentEntity : EntityBase
 
     public abstract void CloseProductionButton();
     public override abstract UniTaskVoid Interact();
-   
-    
+    protected void SetProductionOrderText(int count)
+    {
+        //Debug.LogError("SetProductionOrderText:"+this.gameObject.name);
+        _productionOrderText.text = $"{count}/{resourceInfo.maxCapacity}";
+    }
+
+
 }
