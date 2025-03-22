@@ -2,12 +2,13 @@ using Cysharp.Threading.Tasks;
 using System;
 using UniRx;
 using UnityEngine;
+using Zenject;
 
 public class DependentResource : ResourceBase
 {
     private ReactiveProperty<int> _queueCount = new ReactiveProperty<int>(0);
     public IReadOnlyReactiveProperty<int> QueueCount => _queueCount;
-    //protected string queueCountKey;
+    protected string _queueCountKey;
     public DependentResource(ResourceManager resourceManager, ResourceCollector resourceCollector)
       : base(resourceManager, resourceCollector)
     {
@@ -20,16 +21,17 @@ public class DependentResource : ResourceBase
 
         if (IsSaveable)
         {
-            _lastSavedTime = LoadSavedTime(ConstantKeys.FlourLastSavedTimeKey);
-            LoadStoredResources(ConstantKeys.FlourStoredResourceKey);
-            LoadQueueCount(ConstantKeys.FlourQueueCountKey);
+            _lastSavedTime = LoadSavedTime(_lastSavedTimeKey);
+            LoadStoredResources(_storedResourceKey);
+            LoadQueueCount(_queueCountKey);
 
             if (_lastSavedTime == default)
             {
                 Debug.Log("Kaydedilen zaman bulunamadý. Yeni üretim baþlatýlýyor.");
-                SaveDatas(ConstantKeys.FlourLastSavedTimeKey, ConstantKeys.FlourStoredResourceKey);
+                SaveDatas(_lastSavedTimeKey, _storedResourceKey);
             }
         }
+
 
         await StartProductionAsync();
     }
@@ -47,17 +49,15 @@ public class DependentResource : ResourceBase
             int producedResources = Mathf.Min(_queueCount.Value, maxProducedResources);
 
             var remainingResources = (timeDifference.TotalSeconds % ProductionTime);
-            
+
             if (StoredResources.Value < MaxCapacity)
             {
                 _queueCount.Value -= producedResources;
-                Debug.Log("Queue " + producedResources + " kadar azaldý");
+                Debug.Log(StoredResources.Value +"._."+ MaxCapacity + "Queue " + producedResources + " kadar azaldý");
             }
-            //_queueCount.Value -= producedResources;
-
-            //DecreaseQueueCount(producedResources);
 
             int newStoredResources = Mathf.Min(MaxCapacity, StoredResources.Value + producedResources);
+            Debug.Log("MaxCapacity"+ MaxCapacity+ " StoredResources.Value:"+ StoredResources.Value + " producedResources" + producedResources+ "    newStoredResources"+ newStoredResources+ " maxProducedResources "+ maxProducedResources+ " _queueCount.Value "+ _queueCount.Value);
             SetStoredResources(newStoredResources);
 
             if (newStoredResources < MaxCapacity)
@@ -65,6 +65,7 @@ public class DependentResource : ResourceBase
 
                 double remainingTime = ProductionTime - remainingResources;
                 _resourceCollector.SetSliderValue(ResourceType, (float)(remainingTime / ProductionTime));
+                Debug.Log("ÜRETÝMEDEVAMEDÝYORUZ");
                 await ProduceWithSlider((float)(remainingTime)); // Üretimi kaldýgý yerden devam ettir
             }
             else
@@ -72,7 +73,7 @@ public class DependentResource : ResourceBase
                 _resourceCollector.SetSliderValue(ResourceType, 1);
                 _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
             }
-            SaveQueueCount(ConstantKeys.FlourQueueCountKey);
+            SaveQueueCount(_queueCountKey);
         }
     }
     public override async UniTask ProduceWithSlider(float remainingTime = 0)
@@ -89,7 +90,7 @@ public class DependentResource : ResourceBase
         while (_queueCount.Value > 0 && StoredResources.Value < MaxCapacity)
         {
             float currentRemainingTime = remainingTime > 0 ? remainingTime : ProductionTime;
-
+            remainingTime = 0;
             while (currentRemainingTime > 0)
             {
                 float targetValue = (float)currentRemainingTime / ProductionTime;
@@ -98,7 +99,7 @@ public class DependentResource : ResourceBase
 
                 currentRemainingTimeForSave = currentRemainingTime;
 
-
+                Debug.Log("EKSÝLÝYOR"+ currentRemainingTime);
                 await UniTask.Delay(1000); // 1 saniye bekle
                 currentRemainingTime--;
             }
@@ -108,7 +109,7 @@ public class DependentResource : ResourceBase
 
             if (IsSaveable)
             {
-                SaveDatas(ConstantKeys.FlourLastSavedTimeKey, ConstantKeys.FlourStoredResourceKey);
+                SaveDatas(_lastSavedTimeKey, _storedResourceKey);
             }
 
             if (_queueCount.Value <= 0)
@@ -123,7 +124,7 @@ public class DependentResource : ResourceBase
 
         if (IsSaveable)
         {
-            SaveDatas(ConstantKeys.FlourLastSavedTimeKey, ConstantKeys.FlourStoredResourceKey);
+            SaveDatas(_lastSavedTimeKey, _storedResourceKey);
         }
 
         SetIsProducing(false);
@@ -138,7 +139,7 @@ public class DependentResource : ResourceBase
 
         if (IsSaveable)
         {
-            SaveDatas(ConstantKeys.FlourLastSavedTimeKey, ConstantKeys.FlourStoredResourceKey, currentRemainingTimeForSave);
+            SaveDatas(_lastSavedTimeKey, _storedResourceKey, currentRemainingTimeForSave);
         }
         _resourceManager.AddResource(ResourceType, collected);
 
@@ -157,29 +158,56 @@ public class DependentResource : ResourceBase
 
         if (IsSaveable)
         {
+            SaveDatas(_lastSavedTimeKey, _storedResourceKey);
             if (_lastSavedTime == default)
             {
+                Debug.Log("1");
                 Debug.Log("Kaydedilen zaman bulunamadý. Yeni üretim baþlatýlýyor.");
-                SaveDatas(ConstantKeys.FlourLastSavedTimeKey, ConstantKeys.FlourStoredResourceKey);
+                //SaveDatas(_lastSavedTimeKey, _storedResourceKey);
                 await ProduceWithSlider();
             }
             else
             {
+                Debug.Log("2");
                 await CalculateProductionOnLoad();
             }
 
-            SaveDatas(ConstantKeys.FlourLastSavedTimeKey, ConstantKeys.FlourStoredResourceKey);
+           
         }
         else
         {
+            Debug.Log("3");
             await ProduceWithSlider();
         }
     }
     public void RemoveFromQueue(ResourceType type, int quantity)
-    {
-        if (_queueCount.Value <= 0) return;
-        _resourceManager.AddResource(type, quantity);
-        DecreaseQueueCount();     
+    {//eksi kullanýnca sapýtýyor.
+        if (_queueCount.Value <= 0) {
+            Debug.Log("Value<0");
+            return; 
+        }
+        if (quantity<= 0)
+        {
+            Debug.Log("quantity<0");
+            return;
+        }
+        if (IsSaveable)
+        {
+            SaveDatas(_lastSavedTimeKey, _storedResourceKey);
+        }
+
+            int amountToRemove = Mathf.Min(quantity, _queueCount.Value);
+        _queueCount.Value -= amountToRemove;
+
+        // Kaynaklarý geri ekle
+        _resourceManager.AddResource(type, amountToRemove);
+
+        // QueueCount deðerini kaydet
+        SaveQueueCount(_queueCountKey);
+
+
+        //_resourceManager.AddResource(type, quantity);
+        //DecreaseQueueCount();     
     }
 
 
@@ -196,7 +224,7 @@ public class DependentResource : ResourceBase
     public void IncreaseQueueCount()
     {
         _queueCount.Value ++;
-        SaveQueueCount(ConstantKeys.FlourQueueCountKey);
+        SaveQueueCount(_queueCountKey);
 
     }
     public void DecreaseQueueCount()
@@ -205,7 +233,7 @@ public class DependentResource : ResourceBase
         {
             _queueCount.Value--;
         }
-        SaveQueueCount(ConstantKeys.FlourQueueCountKey);
+        SaveQueueCount(_queueCountKey);
     }
     protected void SetSliderActive()
     {
@@ -215,8 +243,9 @@ public class DependentResource : ResourceBase
 
     protected override void SaveDatas(string lastSavedKey, string storedKey, float curr = 0)
     {
+        Debug.Log("SAVED");
         base.SaveDatas(lastSavedKey, storedKey, curr);
-        SaveQueueCount(ConstantKeys.FlourQueueCountKey);    
+        SaveQueueCount(_queueCountKey);    
     }
 
     private void LoadQueueCount(string queueKey)

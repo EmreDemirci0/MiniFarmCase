@@ -2,7 +2,7 @@ public static class ConstantKeys
 {
 
     public const string ProductionTimeFullText= "FULL";
-    public const string ProductionTimeFinishText= "FULL";
+    public const string ProductionTimeFinishText= "FINISH";
     //Save
     public const string HayLastSavedTimeKey = "HayLastSavedTime";
     public const string HayStoredResourceKey = "HayStoredResources";

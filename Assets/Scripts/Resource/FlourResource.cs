@@ -5,6 +5,6 @@ public class FlourResource : DependentResource
     {
         _lastSavedTimeKey = ConstantKeys.FlourLastSavedTimeKey;
         _storedResourceKey = ConstantKeys.FlourStoredResourceKey;
-        //_queueCountKey = ConstantKeys.FlourQueueCountKey;
+        _queueCountKey = ConstantKeys.FlourQueueCountKey;
     }
 }

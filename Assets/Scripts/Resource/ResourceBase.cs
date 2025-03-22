@@ -44,6 +44,7 @@ public abstract class ResourceBase
     protected void SetStoredResources(int value) //setter
     {
         _storedResources.Value = value;
+        //Debug.Log("Stored Resources Degisti"+_storedResources.Value);
         //_resourceCollector.SetResourceCapacityText(_resourceType,StoredResources.Value);
     }
     public void SetProductionValues(int productionTime, int maxCapacity)
