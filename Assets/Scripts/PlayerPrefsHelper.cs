@@ -1,9 +1,7 @@
 using System;
 using UnityEngine;
-
 public static class PlayerPrefsHelper
 {
-    // String veri kaydetme ve yükleme
     public static void SaveString(string key, string value)
     {
         PlayerPrefs.SetString(key, value);
@@ -15,7 +13,6 @@ public static class PlayerPrefsHelper
         return PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : defaultValue;
     }
 
-    // Int veri kaydetme ve yükleme
     public static void SaveInt(string key, int value)
     {
         PlayerPrefs.SetInt(key, value);
@@ -27,7 +24,6 @@ public static class PlayerPrefsHelper
         return PlayerPrefs.HasKey(key) ? PlayerPrefs.GetInt(key) : defaultValue;
     }
 
-    // Float veri kaydetme ve yükleme
     public static void SaveFloat(string key, float value)
     {
         PlayerPrefs.SetFloat(key, value);
@@ -39,10 +35,9 @@ public static class PlayerPrefsHelper
         return PlayerPrefs.HasKey(key) ? PlayerPrefs.GetFloat(key) : defaultValue;
     }
 
-    // DateTime veri kaydetme ve yükleme
     public static void SaveDateTime(string key, DateTime dateTime)
     {
-        string dateTimeString = dateTime.ToString("o"); // ISO 8601 formatý
+        string dateTimeString = dateTime.ToString("o"); // ISO 8601
         SaveString(key, dateTimeString);
     }
 
@@ -51,20 +46,16 @@ public static class PlayerPrefsHelper
         string dateTimeString = LoadString(key);
         if (DateTime.TryParse(dateTimeString, out DateTime result))
         {
-            //Debug.Log("Kaydedilen Tarih: "+result);
             return result;
         }
         return defaultValue;
     }
 
-    // Veri silme
     public static void DeleteKey(string key)
     {
         PlayerPrefs.DeleteKey(key);
         PlayerPrefs.Save();
     }
-
-    // Tüm verileri temizleme
     public static void ClearAll()
     {
         PlayerPrefs.DeleteAll();

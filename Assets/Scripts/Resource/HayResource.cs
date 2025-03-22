@@ -1,7 +1,7 @@
 public class HayResource : NonResource
 {
-    public HayResource(ResourceManager resourceManager, ResourceCollector resourceCollector)
-        : base(resourceManager, resourceCollector)
+    public HayResource(ResourceManager resourceManager)
+        : base(resourceManager)
     {
         _lastSavedTimeKey = ConstantKeys.HayLastSavedTimeKey;
         _storedResourceKey = ConstantKeys.HayStoredResourceKey;

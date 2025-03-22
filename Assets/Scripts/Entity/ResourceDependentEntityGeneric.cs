@@ -1,6 +1,3 @@
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
 using Zenject;
 using UniRx;
 using Cysharp.Threading.Tasks;
@@ -15,18 +12,16 @@ public abstract class ResourceDependentEntityGeneric<TResource> : ResourceDepend
     {     
         _resourceManager = resourceManager;
 
-
         _resourceDependentBase = resource;
-        Debug.Log("Burayý base classa alalým???");
-        _resourceDependentBase.ResourceType = GetResourceType();
-        _resourceDependentBase.IsSaveable = resourceInfo.isSaveable;
-        _resourceDependentBase.SetSubscribes();
-        _resourceDependentBase.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);
-        
+        InitializeResource(_resourceDependentBase);
+
         SetQueueSubscribes();
         
         _resourceProductionImage.sprite = _requireResource.RequireResourceSprite;
         _resourceProductionQuantityText.text = "x" + _requireResource.RequireQuantity.ToString();
+
+        _plusProductionOrderButton.onClick.RemoveAllListeners();
+        _minusProductionOrderButton.onClick.RemoveAllListeners();
 
         _plusProductionOrderButton.onClick.AddListener(ProductionPlusButtonClicked);
         _minusProductionOrderButton.onClick.AddListener(ProductionMinusButtonClicked);

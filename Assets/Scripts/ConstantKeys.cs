@@ -1,8 +1,12 @@
 public static class ConstantKeys
 {
+    public const string TotalHayCountKey= "TotalHayCount";
+    public const string TotalFlourCountKey= "TotalFlourCount";
+    public const string TotalBreadCountKey= "TotalBreadCount";
 
     public const string ProductionTimeFullText= "FULL";
     public const string ProductionTimeFinishText= "FINISH";
+
     //Save
     public const string HayLastSavedTimeKey = "HayLastSavedTime";
     public const string HayStoredResourceKey = "HayStoredResources";

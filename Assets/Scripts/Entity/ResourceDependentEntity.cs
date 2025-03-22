@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 public abstract class ResourceDependentEntity : EntityBase
 {
     [Header("Production Buttons")]
@@ -15,14 +14,10 @@ public abstract class ResourceDependentEntity : EntityBase
     [SerializeField] protected TextMeshProUGUI _resourceProductionQuantityText;
     protected bool _isProductionButtonOpen = false;
 
-
     public abstract void CloseProductionButton();
     public override abstract UniTaskVoid Interact();
     protected void SetProductionOrderText(int count)
     {
-        //Debug.LogError("SetProductionOrderText:"+this.gameObject.name);
         _productionOrderText.text = $"{count}/{resourceInfo.maxCapacity}";
     }
-
-
 }

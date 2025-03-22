@@ -1,18 +1,14 @@
 using Cysharp.Threading.Tasks;
 using System;
-using UniRx;
-using Unity.VisualScripting;
 using UnityEngine;
 using Zenject;
 public abstract class NonResource : ResourceBase
 {
-
     [Inject]
-    public NonResource(ResourceManager resourceManager, ResourceCollector resourceCollector)
-         : base(resourceManager, resourceCollector)
+    public NonResource(ResourceManager resourceManager)
+         : base(resourceManager)
     {
         InitializeAsync().Forget();
-
     }
     public override async UniTaskVoid InitializeAsync()
     {
@@ -25,7 +21,6 @@ public abstract class NonResource : ResourceBase
 
             if (_lastSavedTime == default)
             {
-                Debug.Log("Kaydedilen zaman bulunamadý. Yeni üretim baþlatýlýyor.");
                 SaveDatas(_lastSavedTimeKey, _storedResourceKey);
             }
         }
@@ -59,22 +54,20 @@ public abstract class NonResource : ResourceBase
             {
 
                 double remainingTime = ProductionTime - remainingResources;
-                _resourceCollector.SetSliderValue(ResourceType, (float)(remainingTime / ProductionTime));
-                await ProduceWithSlider((float)(remainingTime)); // Üretimi kaldýgý yerden devam ettir
+                _resourceManager.SetSliderValue(ResourceType, (float)(remainingTime / ProductionTime));
+                await ProduceWithSlider((float)(remainingTime));// Resume production from where it left off
             }
             else
             {
-                _resourceCollector.SetSliderValue(ResourceType, 1);
-                _resourceCollector.SetProductionTimerText(ResourceType, "FULL");
+                _resourceManager.SetSliderValue(ResourceType, 1);
+                _resourceManager.SetProductionTimerText(ResourceType, "FULL");
             }
         }
     }
     public override async UniTask ProduceWithSlider(float remainingTime = 0)
     {
-        // Eðer zaten üretim yapýlýyorsa veya depo doluysa, metottan çýk
         if (IsProducing || StoredResources.Value >= MaxCapacity)
         {
-            Debug.Log("Üretim zaten devam ediyor veya depo dolu.");
             return;
         }
 
@@ -87,8 +80,8 @@ public abstract class NonResource : ResourceBase
             while (currentRemainingTime > 0)
             {
                 float targetValue = (float)(currentRemainingTime / ProductionTime);
-                _resourceCollector.SetProductionTimerText(ResourceType, Mathf.RoundToInt(currentRemainingTime) + "s");
-                _resourceCollector.SetSliderValue(ResourceType, targetValue);
+                _resourceManager.SetProductionTimerText(ResourceType, Mathf.RoundToInt(currentRemainingTime) + "s");
+                _resourceManager.SetSliderValue(ResourceType, targetValue);
 
                 currentRemainingTimeForSave = currentRemainingTime;
 
@@ -96,7 +89,7 @@ public abstract class NonResource : ResourceBase
                 currentRemainingTime--;
             }
 
-            SetStoredResources(StoredResources.Value + 1);//Depoya ekle
+            SetStoredResources(StoredResources.Value + 1);//Add to Stored Resources
 
             if (IsSaveable)
             {
@@ -104,8 +97,8 @@ public abstract class NonResource : ResourceBase
             }
         }
 
-        _resourceCollector.SetProductionTimerText(ResourceType, ConstantKeys.ProductionTimeFullText);
-        _resourceCollector.SetSliderValue(ResourceType, 1);
+        _resourceManager.SetProductionTimerText(ResourceType, ConstantKeys.ProductionTimeFullText);
+        _resourceManager.SetSliderValue(ResourceType, 1);
 
         if (IsSaveable)
         {
@@ -121,7 +114,7 @@ public abstract class NonResource : ResourceBase
 
         int collected = StoredResources.Value;
 
-        SetStoredResources(0); //toplandýðý için sýfýrla
+        SetStoredResources(0); //Reset for addition
 
         _resourceManager.AddResource(ResourceType, collected);
 
@@ -134,9 +127,6 @@ public abstract class NonResource : ResourceBase
         {
             await ProduceWithSlider();
         }
-
         return collected;
-    }
-
-    
+    } 
 }

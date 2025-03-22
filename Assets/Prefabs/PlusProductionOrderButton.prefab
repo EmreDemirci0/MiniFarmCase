@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3482958083030094620}
   - component: {fileID: 4413355521759132314}
   m_Layer: 5
-  m_Name: Text (TMP) (1)
+  m_Name: ResourceQuantity
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -146,7 +146,7 @@ GameObject:
   - component: {fileID: 1072281374361068768}
   - component: {fileID: 2058547975910290077}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: PlusText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -280,7 +280,7 @@ GameObject:
   - component: {fileID: 5778122107240043580}
   - component: {fileID: 7912471086090296523}
   m_Layer: 5
-  m_Name: Image
+  m_Name: ResourceImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
