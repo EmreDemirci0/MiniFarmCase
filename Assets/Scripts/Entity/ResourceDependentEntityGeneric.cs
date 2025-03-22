@@ -14,10 +14,12 @@ public abstract class ResourceDependentEntityGeneric<TResource> : ResourceDepend
     public void ConstructBase(ResourceManager resourceManager, TResource resource)
     {     
         _resourceManager = resourceManager;
+
+
         _resourceDependentBase = resource;
         _resourceDependentBase.ResourceType = GetResourceType();
+        _resourceDependentBase.IsSaveable = resourceInfo.isSaveable;
         _resourceDependentBase.SetSubscribes();
-
         _resourceDependentBase.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);
         
         SetQueueSubscribes();

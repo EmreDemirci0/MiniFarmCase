@@ -10,4 +10,5 @@ public class SCResources : ScriptableObject
     [Header("Production")]
     public int productionTime = 5;
     public int maxCapacity = 5;
+    public bool isSaveable;
 }

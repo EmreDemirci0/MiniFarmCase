@@ -16,3 +16,4 @@ MonoBehaviour:
   resourceSprite: {fileID: 21300000, guid: be5df5669c8834b66a502e016ef957ff, type: 3}
   productionTime: 20
   maxCapacity: 15
+  isSaveable: 1

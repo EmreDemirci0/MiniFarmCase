@@ -10,6 +10,7 @@ public abstract class NonResourceEntity<TResource> : EntityBase where TResource 
     {
         _resourceNon = resource;
         _resourceNon.ResourceType = GetResourceType();
+        _resourceNon.IsSaveable=resourceInfo.isSaveable;
         _resourceNon.SetSubscribes();
         _resourceNon.SetProductionValues(resourceInfo.productionTime, resourceInfo.maxCapacity);
         
